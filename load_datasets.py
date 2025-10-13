@@ -684,15 +684,16 @@ def load_data(dataset_type='qg', start_index=None, batch_size=300):
                     print('This part is working - JCK')
                     data = build_features_and_labels(tree)
                     # Truncate to batch_size
-                    if data['pf_points'].shape[0] > batch_size or batch_size is not None:
-                        print(f"Truncating from {data['pf_points'].shape[0]} jets to {batch_size} jets")
-                        data = {
-                            'pf_points': data['pf_points'][:batch_size],
-                            'pf_features': data['pf_features'][:batch_size],
-                            'pf_vectors': data['pf_vectors'][:batch_size],
-                            'pf_mask': data['pf_mask'][:batch_size],
-                            'labels': data['label'][:batch_size]
-                        }
+                    if batch_size is not None:
+                        if data['pf_points'].shape[0] > batch_size:
+                            print(f"Truncating from {data['pf_points'].shape[0]} jets to {batch_size} jets")
+                            data = {
+                                'pf_points': data['pf_points'][:batch_size],
+                                'pf_features': data['pf_features'][:batch_size],
+                                'pf_vectors': data['pf_vectors'][:batch_size],
+                                'pf_mask': data['pf_mask'][:batch_size],
+                                'labels': data['label'][:batch_size]
+                            }
                     return data
     except Exception as e:
         print(f"Could not load actual data: {e}")
