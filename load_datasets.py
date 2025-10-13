@@ -692,7 +692,7 @@ def load_data(dataset_type='qg', start_index=None, batch_size=300):
                                 'pf_features': data['pf_features'][:batch_size],
                                 'pf_vectors': data['pf_vectors'][:batch_size],
                                 'pf_mask': data['pf_mask'][:batch_size],
-                                'labels': data['label'][:batch_size]
+                                'label': data['label'][:batch_size]
                             }
                     return data
     except Exception as e:
@@ -720,6 +720,6 @@ np.save('./jc_full_pf_points', jc_full_data['pf_points'])
 np.save('./jc_full_pf_features', jc_full_data['pf_features'])
 np.save('./jc_full_pf_vectors', jc_full_data['pf_vectors'])
 np.save('./jc_full_pf_mask', jc_full_data['pf_mask'])
-np.save('./jc_full_labels', jc_full_data['labels'])
+np.save('./jc_full_labels', jc_full_data['label'])
 
 print('Saved full JC dataset arrays!')
