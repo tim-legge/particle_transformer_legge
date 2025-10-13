@@ -716,10 +716,10 @@ jc_full_data = load_data('jc_full', batch_size=None)
 
 print('Downloaded full JC dataset!')
 
-np.save('/moe-interpretability-pv/datasets/jc_full_pf_points', jc_full_data['pf_points'])
-np.save('/moe-interpretability-pv/datasets/jc_full_pf_features', jc_full_data['pf_features'])
-np.save('/moe-interpretability/datasets/jc_full_pf_vectors', jc_full_data['pf_vectors'])
-np.save('/moe-interpretability/datasets/jc_full_pf_mask', jc_full_data['pf_mask'])
-np.save('/moe-interpretability/datasets/jc_full_labels', jc_full_data['labels'])
+np.save('./jc_full_pf_points', jc_full_data['pf_points'])
+np.save('./jc_full_pf_features', jc_full_data['pf_features'])
+np.save('./jc_full_pf_vectors', jc_full_data['pf_vectors'])
+np.save('./jc_full_pf_mask', jc_full_data['pf_mask'])
+np.save('./jc_full_labels', jc_full_data['labels'])
 
 print('Saved full JC dataset arrays!')
