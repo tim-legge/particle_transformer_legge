@@ -2381,12 +2381,12 @@ while start_counter < 100000//howmanyjets:
 
     for expert_idx, weights in enumerate(stacking_data):
         np.save(f'data_{start_idx}_to_{start_idx+1000}_jet_type_{jet_type}_expert_{expert_idx}_stacked_MoE_bars_100k.npy', np.array(weights))
+        subprocess.run(['sudo', 'mv', f'data_{start_idx}_to_{start_idx+1000}_jet_type_{jet_type}_expert_{expert_idx}_stacked_MoE_bars_100k.npy', f'/moe-interpretability-pv/moe_stacked_bars_100k_data/'])
 
     start_counter += 1
     with open('counter_stacked_MoE_bars_100k.txt', 'w') as f:
         f.write(str(start_counter))
 
-    subprocess.run(['sudo', 'mv', '-f', 'counter_stacked_MoE_bars_100k.txt', '/moe-interpretability-pv/'])
-    subprocess.run(['sudo', 'mv', f'data_{start_idx}_to_{start_idx+1000}_jet_type_{jet_type}_stacked_MoE_bars_100k.npy', f'/moe-interpretability-pv/moe_stacked_bars_100k_data/'])
-
+    subprocess.run(['sudo', 'mv', '-f', 'counter_stacked_MoE_bars_100k.txt', '/moe-interpretability-pv/moe_stacked_bars_100k_data/'])
+    
     print(f'Iteration {start_counter}/{100000//howmanyjets} complete! Results saved, rerunning for next iteration...')
