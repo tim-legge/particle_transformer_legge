@@ -28,19 +28,22 @@ idx_to_label = {
 for label_idx, label in idx_to_label.items():
     for file in os.listdir('/moe-interpretability-pv/moe_stacked_bars_100k_data'):
         if f'jet_type_{label}' in file:
-            if file.endswith('.npy'):
-                data = np.load(f'/moe-interpretability-pv/moe_stacked_bars_100k_data/{file}', allow_pickle=True)
-                for expert_idx in range(num_experts):
-                    expert_weight_data[expert_idx] = np.concatenate((expert_weight_data[expert_idx], data[expert_idx]))
-
-    num_bins = 1000
+            expert_idx_in_file = int(file.split('expert_')[1].split('_')[0])
+            data = np.load(f'/moe-interpretability-pv/moe_stacked_bars_100k_data/{file}', allow_pickle=True)
+            for expert_idx in range(num_experts):
+                expert_weight_data[expert_idx_in_file] = np.concatenate((expert_weight_data[expert_idx_in_file], data))
+        else:
+            continue
+            
+    num_bins = 300
     bottom = np.zeros(num_bins)
 
     fig, ax = plt.subplots()
     ax.hist(expert_weight_data, bins=num_bins, histtype='barstacked', label=[f'Expert {i}' for i in range(num_experts)], density=True, color=plt.cm.tab10.colors[:num_experts])
     ax.legend(fontsize=18, loc='upper left')
-    ax.set_title(f'Distribution of Expert Weights, {label}')
-    plt.show()
+    ax.set_title(f'Distribution of Expert Weights, {label.replace("_", " ")} Jets')
+
     plt.savefig(f'./MoeStackedBar_plot_{label}_100k.png')
-    subprocess.run(['sudo', 'mv', f'./MoeStackedBar_plot_{label}_100k.png', f'/moe-interpretability-pv/moe_stacked_bars_100k_data/MoeStackedBar_plot_{label}_100k.png'])
+    expert_weight_data = [np.array([]) for _ in range(num_experts)]
+    # subprocess.run(['sudo', 'mv', f'./MoeStackedBar_plot_{label}_100k.png', f'/moe-interpretability-pv/moe_stacked_bars_100k_data/MoeStackedBar_plot_{label}_100k.png'])
     # data_0_to_1000_jet_type_Higgs BB_expert_0_stacked_MoE_bars_100k.npy
