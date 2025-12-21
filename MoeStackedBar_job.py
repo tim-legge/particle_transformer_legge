@@ -2330,16 +2330,16 @@ class Router_Hook:
 
 # %%
 idx_to_label = {
-    0: 'Higgs BB',
-    1: 'Higgs CC',
-    2: 'Higgs GG',
-    3: 'Higgs QQL',
-    4: 'Higgs 4Q',
-    5: 'Top BL',
-    6: 'Top BQQ',
-    7: 'W QQ',
+    0: 'Higgs_BB',
+    1: 'Higgs_CC',
+    2: 'Higgs_GG',
+    3: 'Higgs_QQL',
+    4: 'Higgs_4Q',
+    5: 'Top_BL',
+    6: 'Top_BQQ',
+    7: 'W_QQ',
     8: 'QCD',
-    9: 'Z QQ'
+    9: 'Z_QQ'
 }
 
 # %%
