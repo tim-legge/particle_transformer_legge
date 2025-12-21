@@ -2356,10 +2356,12 @@ with open('/moe-interpretability-pv/moe_stacked_bars_100k_data/counter_stacked_M
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 import subprocess
 
-while start_counter < 100:
+howmanyjets = 5000
+
+while start_counter < 100000//howmanyjets:
     print(f'Beginning iteration {start_counter}/100...')
-    start_idx = start_counter * 1000
-    howmanyjets = 1000
+    start_idx = start_counter * howmanyjets
+    
 
     features = np.load('/moe-interpretability-pv/datasets/jc_full_pf_features.npy', allow_pickle=True)[start_idx:howmanyjets+start_idx]
     masks = np.load('/moe-interpretability-pv/datasets/jc_full_pf_mask.npy', allow_pickle=True)[start_idx:howmanyjets+start_idx]
@@ -2387,4 +2389,5 @@ while start_counter < 100:
     subprocess.run(['sudo', 'cp', 'counter_stacked_MoE_bars_100k.txt', '/moe-interpretability-pv/counter_stacked_MoE_bars_100k.txt'])
     subprocess.run(['sudo', 'cp', f'data_{start_idx}_to_{start_idx+1000}_jet_type_{jet_type}_stacked_MoE_bars_100k.npy', f'/moe-interpretability-pv/moe_stacked_bars_100k_data/data_{start_idx}_to_{start_idx+1000}_jet_type_{jet_type}_stacked_MoE_bars_100k.npy'])
 
-    print(f'Iteration {start_counter}/100 complete! Results saved, rerunning for next iteration...')
+    print(f'Iteration {start_counter}/{100000//howmanyjets} complete! Results saved, rerunning for next iteration...')
+    
