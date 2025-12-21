@@ -2360,7 +2360,7 @@ with open('/moe-interpretability-pv/counter_stacked_MoE_bars_100k.txt', 'r') as 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 while start_counter < 100:
-
+    print(f'Beginning iteration {start_counter}/100...')
     start_idx = start_counter * 1000
     howmanyjets = 1000
 
@@ -2370,14 +2370,13 @@ while start_counter < 100:
     vectors = np.load('/moe-interpretability-pv/datasets/jc_full_pf_vectors.npy', allow_pickle=True)[start_idx:howmanyjets+start_idx]
     points = np.load('/moe-interpretability-pv/datasets/jc_full_pf_points.npy', allow_pickle=True)[start_idx:howmanyjets+start_idx]
 
-    # %%
     jet_type = idx_to_label[start_idx // 10000]
 
     # %%
     with torch.no_grad():
         y_pred= MoE_model(torch.from_numpy(points),torch.from_numpy(features),
                                     torch.from_numpy(vectors),torch.from_numpy(masks))
-
+    print('Inference complete!')
     # %%
     stacking_data = [[weight for weight in router_hook.expert_weights[:,i].numpy() if weight != 0] for i in range(router_hook.model.moe_num_experts)]
 
@@ -2388,4 +2387,4 @@ while start_counter < 100:
     with open('/moe-interpretability-pv/counter_stacked_MoE_bars_100k.txt', 'w') as f:
         f.write(str(start_counter))
 
-
+    print(f'Iteration {start_counter}/100 complete! Results saved, rerunning for next iteration...')
