@@ -2378,7 +2378,7 @@ while start_counter < 100:
     stacking_data = [[weight for weight in router_hook.expert_weights[:,i].numpy() if weight != 0] for i in range(router_hook.model.moe_num_experts)]
 
     for expert_idx, weights in enumerate(stacking_data):
-        np.save(f'data_{start_idx}_to_{start_idx+1000}_jet_type_{jet_type}_stacked_MoE_bars_100k.npy', np.array(weights))
+        np.save(f'data_{start_idx}_to_{start_idx+1000}_jet_type_{jet_type}_expert_{expert_idx}_stacked_MoE_bars_100k.npy', np.array(weights))
 
     start_counter += 1
     with open('counter_stacked_MoE_bars_100k.txt', 'w') as f:
