@@ -2386,7 +2386,7 @@ while start_counter < 100000//howmanyjets:
     with open('counter_stacked_MoE_bars_100k.txt', 'w') as f:
         f.write(str(start_counter))
 
-    subprocess.run(['sudo', 'cp', 'counter_stacked_MoE_bars_100k.txt', '/moe-interpretability-pv/counter_stacked_MoE_bars_100k.txt'])
-    subprocess.run(['sudo', 'cp', f'data_{start_idx}_to_{start_idx+1000}_jet_type_{jet_type}_stacked_MoE_bars_100k.npy', f'/moe-interpretability-pv/moe_stacked_bars_100k_data/data_{start_idx}_to_{start_idx+1000}_jet_type_{jet_type}_stacked_MoE_bars_100k.npy'])
+    subprocess.run(['sudo', 'mv', '-f', 'counter_stacked_MoE_bars_100k.txt', '/moe-interpretability-pv/'])
+    subprocess.run(['sudo', 'mv', f'data_{start_idx}_to_{start_idx+1000}_jet_type_{jet_type}_stacked_MoE_bars_100k.npy', f'/moe-interpretability-pv/moe_stacked_bars_100k_data/'])
 
     print(f'Iteration {start_counter}/{100000//howmanyjets} complete! Results saved, rerunning for next iteration...')
