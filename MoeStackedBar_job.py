@@ -2350,10 +2350,7 @@ MoE_model.load_state_dict(MoE_statedict)
 router_hook = Router_Hook(model=MoE_model)
 
 # %%
-if not os.path.exists('/moe-interpretability-pv/counter_stacked_MoE_bars_100k.txt'):
-    with open('/moe-interpretability-pv/counter_stacked_MoE_bars_100k.txt', 'w') as f:
-        f.write('0')
-with open('/moe-interpretability-pv/counter_stacked_MoE_bars_100k.txt', 'r') as f:
+with open('/moe-interpretability-pv/moe_stacked_bars_100k_data/counter_stacked_MoE_bars_100k.txt', 'r') as f:
     start_counter = int(f.read().strip())
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
