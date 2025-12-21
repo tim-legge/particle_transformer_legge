@@ -2356,10 +2356,10 @@ with open('/moe-interpretability-pv/moe_stacked_bars_100k_data/counter_stacked_M
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 import subprocess
 
-howmanyjets = 5000
+howmanyjets = 1000
 
 while start_counter < 100000//howmanyjets:
-    print(f'Beginning iteration {start_counter}/100...')
+    print(f'Beginning iteration {start_counter}/{100000//howmanyjets}...')
     start_idx = start_counter * howmanyjets
     
 
@@ -2390,4 +2390,3 @@ while start_counter < 100000//howmanyjets:
     subprocess.run(['sudo', 'cp', f'data_{start_idx}_to_{start_idx+1000}_jet_type_{jet_type}_stacked_MoE_bars_100k.npy', f'/moe-interpretability-pv/moe_stacked_bars_100k_data/data_{start_idx}_to_{start_idx+1000}_jet_type_{jet_type}_stacked_MoE_bars_100k.npy'])
 
     print(f'Iteration {start_counter}/{100000//howmanyjets} complete! Results saved, rerunning for next iteration...')
-    
