@@ -2372,6 +2372,7 @@ while start_counter < 100000//howmanyjets:
     jet_type = idx_to_label[start_idx // 10000]
 
     # %%
+    MoE_model.eval()
     with torch.no_grad():
         y_pred= MoE_model(torch.from_numpy(points),torch.from_numpy(features),
                                     torch.from_numpy(vectors),torch.from_numpy(masks))
@@ -2380,8 +2381,8 @@ while start_counter < 100000//howmanyjets:
     stacking_data = [[weight for weight in router_hook.expert_weights[:,i].numpy() if weight != 0] for i in range(router_hook.model.moe_num_experts)]
 
     for expert_idx, weights in enumerate(stacking_data):
-        np.save(f'data_{start_idx}_to_{start_idx+1000}_jet_type_{jet_type}_expert_{expert_idx}_stacked_MoE_bars_100k.npy', np.array(weights))
-        subprocess.run(['sudo', 'mv', f'data_{start_idx}_to_{start_idx+1000}_jet_type_{jet_type}_expert_{expert_idx}_stacked_MoE_bars_100k.npy', f'/moe-interpretability-pv/moe_stacked_bars_100k_data/'])
+        np.save(f'data_{start_idx}_to_{start_idx+1000}_jet_type_{jet_type}_expert_{expert_idx}_stacked_MoE_bars_100k_attempt_1.npy', np.array(weights))
+        subprocess.run(['sudo', 'mv', f'data_{start_idx}_to_{start_idx+1000}_jet_type_{jet_type}_expert_{expert_idx}_stacked_MoE_bars_100k_attempt_1.npy', f'/moe-interpretability-pv/moe_stacked_bars_100k_data/'])
 
     start_counter += 1
     with open('counter_stacked_MoE_bars_100k.txt', 'w') as f:

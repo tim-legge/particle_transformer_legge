@@ -27,7 +27,7 @@ idx_to_label = {
 
 for label_idx, label in idx_to_label.items():
     for file in os.listdir('/moe-interpretability-pv/moe_stacked_bars_100k_data'):
-        if f'jet_type_{label}' in file:
+        if (f'jet_type_{label}' and 'attempt_1') in file:
             expert_idx_in_file = int(file.split('expert_')[1].split('_')[0])
             data = np.load(f'/moe-interpretability-pv/moe_stacked_bars_100k_data/{file}', allow_pickle=True)
             for expert_idx in range(num_experts):
