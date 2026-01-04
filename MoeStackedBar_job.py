@@ -2347,7 +2347,6 @@ MoE_model = get_model('jc_full')[0]
 
 MoE_statedict = torch.load('net_best_epoch_state.pt', map_location=torch.device('cpu'))
 MoE_model.load_state_dict(MoE_statedict)
-router_hook = Router_Hook(model=MoE_model)
 
 # %%
 with open('/moe-interpretability-pv/moe_stacked_bars_100k_data/counter_stacked_MoE_bars_100k.txt', 'r') as f:
@@ -2362,7 +2361,6 @@ while start_counter < 100000//howmanyjets:
     print(f'Beginning iteration {start_counter}/{100000//howmanyjets}...')
     start_idx = start_counter * howmanyjets
     
-
     features = np.load('/moe-interpretability-pv/datasets/jc_full_pf_features.npy', allow_pickle=True)[start_idx:howmanyjets+start_idx]
     masks = np.load('/moe-interpretability-pv/datasets/jc_full_pf_mask.npy', allow_pickle=True)[start_idx:howmanyjets+start_idx]
     labels = np.load('/moe-interpretability-pv/datasets/jc_full_labels.npy', allow_pickle=True)[start_idx:howmanyjets+start_idx]
@@ -2372,22 +2370,26 @@ while start_counter < 100000//howmanyjets:
     jet_type = idx_to_label[start_idx // 10000]
 
     # %%
+    router_hook = Router_Hook(model=MoE_model)
     MoE_model.eval()
     with torch.no_grad():
-        y_pred= MoE_model(torch.from_numpy(points),torch.from_numpy(features),
+        y_pred = MoE_model(torch.from_numpy(points),torch.from_numpy(features),
                                     torch.from_numpy(vectors),torch.from_numpy(masks))
     print('Inference complete!')
     # %%
     stacking_data = [[weight for weight in router_hook.expert_weights[:,i].numpy() if weight != 0] for i in range(router_hook.model.moe_num_experts)]
 
     for expert_idx, weights in enumerate(stacking_data):
-        np.save(f'data_{start_idx}_to_{start_idx+1000}_jet_type_{jet_type}_expert_{expert_idx}_stacked_MoE_bars_100k_attempt_1.npy', np.array(weights))
-        subprocess.run(['sudo', 'mv', f'data_{start_idx}_to_{start_idx+1000}_jet_type_{jet_type}_expert_{expert_idx}_stacked_MoE_bars_100k_attempt_1.npy', f'/moe-interpretability-pv/moe_stacked_bars_100k_data/'])
-
+        np.save(f'data_{start_idx}_to_{start_idx+1000}_jet_type_{jet_type}_expert_{expert_idx}_stacked_MoE_bars_100k_attempt_2.npy', np.array(weights))
+        # get filesize
+        filesize = subprocess.check_output(['du', '-h', f'data_{start_idx}_to_{start_idx+1000}_jet_type_{jet_type}_expert_{expert_idx}_stacked_MoE_bars_100k_attempt_2.npy']).split()[0].decode('utf-8')
+        print(f'Saved expert {expert_idx} data for jets {start_idx} to {start_idx+1000}. File size: {filesize}')
+        subprocess.run(['sudo', 'mv', f'data_{start_idx}_to_{start_idx+1000}_jet_type_{jet_type}_expert_{expert_idx}_stacked_MoE_bars_100k_attempt_2.npy', f'/moe-interpretability-pv/moe_stacked_bars_100k_data/'])
+    
     start_counter += 1
     with open('counter_stacked_MoE_bars_100k.txt', 'w') as f:
         f.write(str(start_counter))
 
     subprocess.run(['sudo', 'mv', '-f', 'counter_stacked_MoE_bars_100k.txt', '/moe-interpretability-pv/moe_stacked_bars_100k_data/'])
     
-    print(f'Iteration {start_counter}/{100000//howmanyjets} complete! Results saved, rerunning for next iteration...')
+    print(f'Iteration {start_counter}/{100000//howmanyjets} complete! Results saved as type {jet_type}, rerunning for next iteration...')
