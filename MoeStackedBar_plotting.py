@@ -27,19 +27,24 @@ idx_to_label = {
 
 for label_idx, label in idx_to_label.items():
     for file in os.listdir('/moe-interpretability-pv/moe_stacked_bars_100k_data'):
-        if (f'jet_type_{label}' and 'attempt_1') in file:
-            expert_idx_in_file = int(file.split('expert_')[1].split('_')[0])
-            data = np.load(f'/moe-interpretability-pv/moe_stacked_bars_100k_data/{file}', allow_pickle=True)
-            for expert_idx in range(num_experts):
-                expert_weight_data[expert_idx_in_file] = np.concatenate((expert_weight_data[expert_idx_in_file], data))
+        if f'jet_type_{label}' in file:
+            if 'attempt_1' in file:
+                expert_idx_in_file = int(file.split('expert_')[1].split('_')[0])
+                data = np.load(f'/moe-interpretability-pv/moe_stacked_bars_100k_data/{file}', allow_pickle=True)
+                for expert_idx in range(num_experts):
+                    expert_weight_data[expert_idx_in_file] = np.concatenate((expert_weight_data[expert_idx_in_file], data))
         else:
             continue
-            
+    
+    print('data loaded for ', label)
     num_bins = 300
     bottom = np.zeros(num_bins)
+    
+    total_counts = sum([len(expert_weight_data[expert_idx]) for expert_idx in range(num_experts)])
+    percentages = [len(expert_weight_data[expert_idx]) / total_counts * 100 for expert_idx in range(num_experts)]
 
     fig, ax = plt.subplots()
-    ax.hist(expert_weight_data, bins=num_bins, histtype='barstacked', label=[f'Expert {i}' for i in range(num_experts)], density=True, color=plt.cm.tab10.colors[:num_experts])
+    ax.hist(expert_weight_data, bins=num_bins, histtype='barstacked', label=[f'Expert {i}: {percentages[i]}' for i in range(num_experts)], density=True, color=plt.cm.tab10.colors[:num_experts])
     ax.legend(fontsize=18, loc='upper left')
     ax.set_title(f'Distribution of Expert Weights, {label.replace("_", " ")} Jets')
 
