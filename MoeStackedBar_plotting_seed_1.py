@@ -26,7 +26,7 @@ idx_to_label = {
     9: 'Z_QQ'
 }
 
-seed = 0
+seed = 1
 data_dir = f'/moe-interpretability-pv/moe_stacked_bars_100k_data_seed_{seed}/'
 attempt = 0
 
