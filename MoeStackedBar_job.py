@@ -2354,7 +2354,7 @@ MoE_statedict = torch.load(model_path, map_location=torch.device('cpu'))
 MoE_model.load_state_dict(MoE_statedict)
 
 # %%
-with open('/moe-interpretability-pv/moe_stacked_bars_100k_data/counter_stacked_MoE_bars_100k.txt', 'r') as f:
+with open(data_dir+'counter_stacked_MoE_bars_100k.txt', 'r') as f:
     start_counter = int(f.read().strip())
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
