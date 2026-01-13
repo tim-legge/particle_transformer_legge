@@ -2345,7 +2345,12 @@ idx_to_label = {
 # %%
 MoE_model = get_model('jc_full')[0]
 
-MoE_statedict = torch.load('net_best_epoch_state.pt', map_location=torch.device('cpu'))
+seed = 0
+model_path = f'models/jc_100_seed_{seed}_net_epoch_state.pt'
+data_dir = f'/moe-interpretability-pv/moe_stacked_bars_100k_data_seed{seed}/'
+attempt = 0
+
+MoE_statedict = torch.load(model_path, map_location=torch.device('cpu'))
 MoE_model.load_state_dict(MoE_statedict)
 
 # %%
@@ -2380,16 +2385,17 @@ while start_counter < 100000//howmanyjets:
     stacking_data = [[weight for weight in router_hook.expert_weights[:,i].numpy() if weight != 0] for i in range(router_hook.model.moe_num_experts)]
 
     for expert_idx, weights in enumerate(stacking_data):
-        np.save(f'data_{start_idx}_to_{start_idx+1000}_jet_type_{jet_type}_expert_{expert_idx}_stacked_MoE_bars_100k_attempt_2.npy', np.array(weights))
+        file_name = f'data_{start_idx}_to_{start_idx+1000}_jet_type_{jet_type}_expert_{expert_idx}_stacked_MoE_bars_100k_attempt_{attempt}.npy'
+        np.save(file_name, np.array(weights))
         # get filesize
-        filesize = subprocess.check_output(['du', '-h', f'data_{start_idx}_to_{start_idx+1000}_jet_type_{jet_type}_expert_{expert_idx}_stacked_MoE_bars_100k_attempt_2.npy']).split()[0].decode('utf-8')
+        filesize = subprocess.check_output(['du', '-h', file_name]).split()[0].decode('utf-8')
         print(f'Saved expert {expert_idx} data for jets {start_idx} to {start_idx+1000}. File size: {filesize}')
-        subprocess.run(['sudo', 'mv', f'data_{start_idx}_to_{start_idx+1000}_jet_type_{jet_type}_expert_{expert_idx}_stacked_MoE_bars_100k_attempt_2.npy', f'/moe-interpretability-pv/moe_stacked_bars_100k_data/'])
+        subprocess.run(['sudo', 'mv', file_name, data_dir])
     
     start_counter += 1
     with open('counter_stacked_MoE_bars_100k.txt', 'w') as f:
         f.write(str(start_counter))
 
-    subprocess.run(['sudo', 'mv', '-f', 'counter_stacked_MoE_bars_100k.txt', '/moe-interpretability-pv/moe_stacked_bars_100k_data/'])
+    subprocess.run(['sudo', 'mv', '-f', 'counter_stacked_MoE_bars_100k.txt', f'{data_dir}'])
     
     print(f'Iteration {start_counter}/{100000//howmanyjets} complete! Results saved as type {jet_type}, rerunning for next iteration...')
