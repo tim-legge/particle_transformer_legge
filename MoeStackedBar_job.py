@@ -2347,7 +2347,7 @@ MoE_model = get_model('jc_full')[0]
 
 seed = 0
 model_path = f'models/jc_100_seed_{seed}_net_epoch_state.pt'
-data_dir = f'/moe-interpretability-pv/moe_stacked_bars_100k_data_seed{seed}/'
+data_dir = f'/moe-interpretability-pv/moe_stacked_bars_100k_data_seed_{seed}/'
 attempt = 0
 
 MoE_statedict = torch.load(model_path, map_location=torch.device('cpu'))
