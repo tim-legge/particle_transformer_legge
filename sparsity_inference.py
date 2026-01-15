@@ -2455,7 +2455,9 @@ while start_idx < 10:
 
     # Assuming attention is already a list or array
     # Flattening the attention array
-    flattened_attention = unpadded_attentions.flatten()
+    flattened_attention = np.empty(0)
+    for item in unpadded_attentions:
+        flattened_attention.concatenate(flattened_attention, np.array(item))
 
     # Define number of bins for the probability distribution
     num_bins = 20
