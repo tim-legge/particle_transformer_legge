@@ -21,7 +21,7 @@ plt.style.use(hep.style.ROOT)
 import argparse
 
 parser = argparse.ArgumentParser(description='select model to run inference on')
-parser.add_argument('-m', '--model', type=int, required=True, help='model to run inference on (10_pct, seed_0, or seed_1)')
+parser.add_argument('-m', '--model', type=str, required=True, help='model to run inference on (10_pct, seed_0, or seed_1)')
 
 model = parser.parse_args().model
 
