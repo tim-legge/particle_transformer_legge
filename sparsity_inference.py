@@ -2447,14 +2447,15 @@ while start_idx < 10:
     pad_limits = pre_softmax_hook.get_padding(pre_softmax_hook.attentions, masks)
     print(attentions.shape)
 
-    attentions = [attentions[:][:][jet_idx, :pad_limits[jet_idx], :pad_limits[jet_idx]].cpu().numpy() for jet_idx in range(attentions.shape[1])]
-
+    unpadded_attentions = []
+    for jet_idx in range(attentions.shape[1]):
+        unpadded_attentions.append(attentions[:][jet_idx][:, :pad_limits[jet_idx], :pad_limits[jet_idx]].cpu().numpy())
     import numpy as np
     import matplotlib.pyplot as plt
 
     # Assuming attention is already a list or array
     # Flattening the attention array
-    flattened_attention = np.stack(attentions).flatten()
+    flattened_attention = np.stack(unpadded_attentions).flatten()
 
     # Define number of bins for the probability distribution
     num_bins = 20
