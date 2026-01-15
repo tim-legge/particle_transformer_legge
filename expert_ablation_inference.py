@@ -1,15 +1,3 @@
-import argparse
-
-parser = argparse.ArgumentParser(description='Expert Ablation')
-parser.add_argument('-e', '--expert', type=int, required=True, help='Expert index to ablate')
-parser.add_argument('-m', '--model', type=str, required=True, help='Model name')
-parser.add_argument('-n', '--num-jets', type=int, default=100000, help='Number of jets to process')
-
-model = parser.parse_args().model
-ablated_experts = np.array([parser.parse_args().expert])
-num_jets = parser.parse_args().num_jets
-
-
 # Moe ParT modified to store router output, accessed via MoeRouterHook
 
 from typing import List, Optional
@@ -52,7 +40,16 @@ colors = plt.rcParams['axes.prop_cycle'].by_key()['color']
 plt.style.use(hep.style.ROOT)
 plt.rcParams['axes.prop_cycle'] = plt.cycler(color=colors)
 
+import argparse
 
+parser = argparse.ArgumentParser(description='Expert Ablation')
+parser.add_argument('-e', '--expert', type=int, required=True, help='Expert index to ablate')
+parser.add_argument('-m', '--model', type=str, required=True, help='Model name')
+parser.add_argument('-n', '--num-jets', type=int, default=100000, help='Number of jets to process')
+
+model = parser.parse_args().model
+ablated_experts = np.array([parser.parse_args().expert])
+num_jets = parser.parse_args().num_jets
 
 # functions to facilitate modded Multihead
 
