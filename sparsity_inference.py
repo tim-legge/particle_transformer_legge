@@ -2408,8 +2408,11 @@ MoE_statedict = torch.load(modelpath, map_location=torch.device('cpu'))
 MoE_model.load_state_dict(MoE_statedict)
 #router_hook = Router_Hook(model=MoE_model)
 pre_softmax_hook = Pre_Softmax_Hook(model=MoE_model)
+import subprocess
 
-with open(f'/moe-interpretability-pv/moe_sparsity_hists_{model}/counter.txt', 'r') as f:
+subprocess.run(['sudo', 'cp', f'/moe-interpretability-pv/moe_sparsity_hists_{model}/counter.txt', './counter.txt'])
+
+with open(f'./counter.txt', 'r') as f:
     start_idx = int(f.read().strip())
 
 howmanyjets = 1000
@@ -2492,8 +2495,9 @@ while start_idx < 10:
 
     print(f'Completed start_idx: {start_idx}')
     start_idx += 1
-    with open(f'/moe-interpretability-pv/moe_sparsity_hists_{model}/counter.txt', 'w') as f:
+    with open(f'./counter.txt', 'w') as f:
         f.write(str(start_idx))
+    subprocess.run(['sudo', 'cp', './counter.txt', f'/moe-interpretability-pv/moe_sparsity_hists_{model}/counter.txt'])
 
 for file in os.listdir(f'/moe-interpretability-pv/moe_sparsity_hists_{model}/'):
     if file.startswith('sparsity_hist_counts_start_idx_') and file.endswith('.npy'):
