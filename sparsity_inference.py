@@ -2449,7 +2449,7 @@ while start_idx < 10:
 
     unpadded_attentions = []
     for jet_idx in range(attentions.shape[1]):
-        unpadded_attentions.append(attentions[:][jet_idx][:, :pad_limits[jet_idx], :pad_limits[jet_idx]].cpu().numpy())
+        unpadded_attentions.append(attentions[:,jet_idx,:, :pad_limits[jet_idx], :pad_limits[jet_idx]].cpu().numpy())
     import numpy as np
     import matplotlib.pyplot as plt
 
