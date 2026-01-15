@@ -2455,7 +2455,7 @@ while start_idx < 10:
 
     # Assuming attention is already a list or array
     # Flattening the attention array
-    flattened_attention = unpadded_attentions
+    flattened_attention = unpadded_attentions.flatten()
 
     # Define number of bins for the probability distribution
     num_bins = 20
