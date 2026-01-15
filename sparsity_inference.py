@@ -2277,7 +2277,7 @@ class Pre_Softmax_Hook:
         if self.attentions.shape[0] == 0:
             self.attentions = torch.empty((0, output_hooked.shape[0]//self.num_heads, self.num_heads, output_unsqueezed.shape[3], output_unsqueezed.shape[4]), dtype=torch.float32)
 
-        self.attentions = torch.cat((self.attentions, output_unsqueezed), dim=0)
+        self.attentions = torch.cat((self.attentions, output_unsqueezed), dim=0) # shape 
 
     def get_pre_softmax_attention(self, module, input, output):
         print('Getting pre_softmax attention...')
@@ -2300,7 +2300,7 @@ class Pre_Softmax_Hook:
         output_split = output_hooked.view(output_hooked.shape[0]//self.num_heads, self.num_heads, output_hooked.shape[1], output_hooked.shape[2])
         output_unsqueezed = output_split.unsqueeze(dim=0)
     
-        print(f'{output_split[0].shape}')
+        #print(f'{output_split[0].shape}')
 
         if self.pre_softmax_interactions.shape[0] == 0:
             self.pre_softmax_interactions = torch.empty((0, output_hooked.shape[0]//self.num_heads, self.num_heads, output_unsqueezed.shape[3], output_unsqueezed.shape[4]), dtype=torch.float32)
@@ -2451,8 +2451,6 @@ while start_idx < 10:
 
     import numpy as np
     import matplotlib.pyplot as plt
-
-    #running for qg-trained model first
 
     # Assuming attention is already a list or array
     # Flattening the attention array
