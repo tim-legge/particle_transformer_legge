@@ -2376,7 +2376,7 @@ start_idx = 0
 max_jets = 100000
 howmanyjets = num_jets
 
-with open(f'/moe-interpretability-pv/datasets/moe_expert_ablation_{model}/counter.txt', 'r') as f:
+with open(f'/moe-interpretability-pv/moe_expert_ablation_{model}/counter.txt', 'r') as f:
     start_idx = int(f.read().strip())
     print(f'Starting index: {start_idx}')
 
