@@ -2411,6 +2411,7 @@ pre_softmax_hook = Pre_Softmax_Hook(model=MoE_model)
 import subprocess
 
 subprocess.run(['sudo', 'cp', f'/moe-interpretability-pv/moe_sparsity_hists_{model}/counter.txt', './counter.txt'])
+subprocess.run(['sudo', 'chmod', '777', './counter.txt'])
 
 with open(f'./counter.txt', 'r') as f:
     start_idx = int(f.read().strip())
