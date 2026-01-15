@@ -2412,7 +2412,7 @@ pre_softmax_hook = Pre_Softmax_Hook(model=MoE_model)
 with open(f'/moe-interpretability-pv/moe_sparsity_hists_{model}/counter.txt', 'r') as f:
     start_idx = int(f.read().strip())
 
-howmanyjets = 2000
+howmanyjets = 1000
 
 while start_idx < 10:
 
