@@ -2447,7 +2447,7 @@ while start_idx < 10:
     pad_limits = pre_softmax_hook.get_padding(pre_softmax_hook.attentions, masks)
     print(attentions.shape)
 
-    attentions = [attentions[:][jet_idx][:, :pad_limits[jet_idx], :pad_limits[jet_idx]].cpu().numpy() for jet_idx in range(attentions.shape[1])]
+    attentions = [attentions[jet_idx][:][:, :pad_limits[jet_idx], :pad_limits[jet_idx]].cpu().numpy() for jet_idx in range(attentions.shape[1])]
 
     import numpy as np
     import matplotlib.pyplot as plt
