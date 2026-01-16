@@ -45,7 +45,7 @@ import argparse
 parser = argparse.ArgumentParser(description='Expert Ablation')
 parser.add_argument('-e', '--expert', type=int, required=True, help='Expert index to ablate')
 parser.add_argument('-m', '--model', type=str, required=True, help='Model name')
-parser.add_argument('-n', '--num-jets', type=int, default=100000, help='Number of jets to process')
+parser.add_argument('-n', '--num-jets', type=int, default=1000, help='Number of jets to process')
 
 model = parser.parse_args().model
 ablated_experts = np.array([parser.parse_args().expert])
