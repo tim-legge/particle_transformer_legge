@@ -2382,6 +2382,7 @@ subprocess.run(['sudo', 'cp', f'/moe-interpretability-pv/moe_expert_ablation_{mo
 with open(f'counter.txt', 'r') as f:
     start_idx = int(f.read().strip())
     print(f'Starting index: {start_idx}')
+subprocess.run(['sudo', 'chmod', '777', 'counter.txt'])
 
 while start_idx+howmanyjets <= max_jets:
 
@@ -2398,7 +2399,7 @@ while start_idx+howmanyjets <= max_jets:
         y_pred = MoE_model(torch.from_numpy(points),torch.from_numpy(features),
                                     torch.from_numpy(vectors),torch.from_numpy(masks))
     
-    np.save(f'y_pred_ablate_{ablated_experts}_{start_idx}_{howmanyjets+start_idx}.npy', y_pred.cpu().numpy())
+    np.save(f'y_pred_ablate_{ablated_experts_string}_{start_idx}_{howmanyjets+start_idx}.npy', y_pred.cpu().numpy())
     subprocess.run(['sudo', 'mv', f'y_pred_ablate_{ablated_experts_string}_{start_idx}_{howmanyjets+start_idx}.npy', 
                     f'/moe-interpretability-pv/datasets/moe_expert_ablation_{model}/y_pred_ablate_{ablated_experts_string}_{start_idx}_{howmanyjets+start_idx}.npy'])
     start_idx += howmanyjets
