@@ -2389,18 +2389,11 @@ if not os.path.exists(f'/moe-interpretability-pv/moe_expert_ablation_{model}/cou
 subprocess.run(['sudo', 'cp', f'/moe-interpretability-pv/moe_expert_ablation_{model}/{counter_file}', counter_file])
 with open(counter_file, 'r') as f:
     start_idx = int(f.read().strip())
-    if os.listdir(f'/moe-interpretability-pv/moe_expert_ablation_{model}/'):
-        existing_files = os.listdir(f'/moe-interpretability-pv/moe_expert_ablation_{model}/')
-        processed_ranges = []
-        for file in existing_files:
-            if file.startswith(f'y_pred_ablate_{ablated_experts_string}_') and file.endswith('.npy'):
-                parts = file.split('_')
-                range_part = parts[-1].replace('.npy', '')
-                start_range, end_range = map(int, range_part.split('_'))
-                processed_ranges.append((start_range, end_range))
-        if processed_ranges:
-            max_processed_end = max(end for _, end in processed_ranges)
-            start_idx = max(start_idx, max_processed_end)
+    existing_files = os.listdir(f'/moe-interpretability-pv/moe_expert_ablation_{model}/')
+    processed_ranges = []
+    for file in existing_files:
+        if file.endswith(f'{ablated_experts_string}_0_1000.npy'):
+            start_idx = 0
     print(f'Starting index: {start_idx}')
 subprocess.run(['sudo', 'chmod', '777', counter_file])
 
