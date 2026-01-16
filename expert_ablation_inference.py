@@ -1,5 +1,6 @@
 # Moe ParT modified to store router output, accessed via MoeRouterHook
 
+import subprocess
 from typing import List, Optional
 import timeit
 import awkward as ak
@@ -2355,7 +2356,7 @@ elif model == 'seed_1':
 MoE_statedict = torch.load(modelpath, map_location=torch.device('cpu'))
 MoE_model.load_state_dict(MoE_statedict)
 router_hook = Router_Hook(model=MoE_model)
-pre_softmax_hook = Pre_Softmax_Hook(model=MoE_model)
+#pre_softmax_hook = Pre_Softmax_Hook(model=MoE_model)
 
 idx_to_label = {
     0: 'Higgs BB',
@@ -2376,7 +2377,8 @@ start_idx = 0
 max_jets = 100000
 howmanyjets = num_jets
 
-with open(f'/moe-interpretability-pv/moe_expert_ablation_{model}/counter.txt', 'r') as f:
+subprocess.run(['sudo', 'cp', f'/moe-interpretability-pv/moe_expert_ablation_{model}/counter.txt', 'counter.txt'])
+with open(f'counter.txt', 'r') as f:
     start_idx = int(f.read().strip())
     print(f'Starting index: {start_idx}')
 
@@ -2395,7 +2397,9 @@ while start_idx+howmanyjets <= max_jets:
         y_pred = MoE_model(torch.from_numpy(points),torch.from_numpy(features),
                                     torch.from_numpy(vectors),torch.from_numpy(masks))
     
-    np.save(f'/moe-interpretability-pv/datasets/moe_expert_ablation_{model}/y_pred_ablate_{ablated_experts}_{start_idx}_{howmanyjets+start_idx}.npy', y_pred.cpu().numpy())
+    np.save(f'y_pred_ablate_{ablated_experts}_{start_idx}_{howmanyjets+start_idx}.npy', y_pred.cpu().numpy())
+    subprocess.run(['sudo', 'mv', f'y_pred_ablate_{ablated_experts}_{start_idx}_{howmanyjets+start_idx}.npy', 
+                    f'/moe-interpretability-pv/datasets/moe_expert_ablation_{model}/y_pred_ablate_{ablated_experts}_{start_idx}_{howmanyjets+start_idx}.npy'])
     start_idx += howmanyjets
     print(f'processed from {start_idx-howmanyjets} to {start_idx}, jets contained type {idx_to_label[(start_idx-howmanyjets)//max_jets]}')
 
@@ -2411,9 +2415,10 @@ for file in os.listdir(f'/moe-interpretability-pv/datasets/moe_expert_ablation_{
 accuracy = (y_pred.argmax(dim=1).cpu().numpy() == labels.argmax(axis=1)).sum() / howmanyjets
 print(f'When ablating Experts {ablated_experts}, accuracy over {howmanyjets} jets: {accuracy*100:.2f}%')
 
-with open(f'/moe-interpretability-pv/datasets/moe_expert_ablation_{model}/results.txt', 'w') as f:
+with open(f'results.txt', 'w') as f:
     f.write(f'Model: {model}\n')
     f.write(f'When ablating Experts {ablated_experts}, accuracy over {howmanyjets} jets: {accuracy*100:.2f}%\n')
+subprocess.run(['sudo', 'cp', 'results.txt', f'/moe-interpretability-pv/moe_expert_ablation_{model}/results_ablate_{ablated_experts}.txt'])
 
 # background rejection
 efficiency = np.ones(labels.shape[1]) * 0.5
@@ -2427,7 +2432,7 @@ for label in range(labels.shape[1]):
     sig_idx = np.argmin(np.abs(tpr - efficiency[label]))
     rejections.append(1.0 / fpr[sig_idx])
     print(f'Label {label} ({idx_to_label[label]}): Background rejection at {efficiency[label]*100}% signal efficiency: {rejections[-1]:.2f}')
-    with open(f'/moe-interpretability-pv/datasets/moe_expert_ablation_{model}/results.txt', 'a') as f:
+    with open(f'results.txt', 'a') as f:
         f.write(f'Label {label} ({idx_to_label[label]}): AUC: {auc:.4f}\n')
         f.write(f'Label {label} ({idx_to_label[label]}): Background rejection at {efficiency[label]*100}% signal efficiency: {rejections[-1]:.2f}\n')
 
