@@ -2388,12 +2388,11 @@ if not os.path.exists(f'/moe-interpretability-pv/moe_expert_ablation_{model}/cou
 
 subprocess.run(['sudo', 'cp', f'/moe-interpretability-pv/moe_expert_ablation_{model}/{counter_file}', counter_file])
 with open(counter_file, 'r') as f:
-    start_idx_from_counter = int(f.read().strip())
-    existing_files = os.listdir(f'/moe-interpretability-pv/moe_expert_ablation_{model}/')
-    processed_ranges = []
-    for file in existing_files:
-        if file.endswith(f'{ablated_experts_string}_0_1000.npy'):
-            start_idx = start_idx_from_counter
+    start_idx = int(f.read().strip())
+    #existing_files = os.listdir(f'/moe-interpretability-pv/moe_expert_ablation_{model}/')
+    #for file in existing_files:
+    #    if file.endswith(f'{ablated_experts_string}_0_1000.npy'):
+    #        start_idx = start_idx_from_counter
     print(f'Starting index: {start_idx}')
 subprocess.run(['sudo', 'chmod', '777', counter_file])
 
@@ -2422,7 +2421,7 @@ while start_idx+howmanyjets <= max_jets:
         print(f'Error copying file to PV: {e}')
         exit(1)
     start_idx += howmanyjets
-    print(f'processed from {start_idx-howmanyjets} to {start_idx}, jets contained type {idx_to_label[(start_idx-howmanyjets)//max_jets]}')
+    print(f'processed from {start_idx-howmanyjets} to {start_idx}, jets contained type {idx_to_label[(start_idx-howmanyjets)//10000]}')
     with open(counter_file, 'w') as f:
         f.write(str(start_idx))
     subprocess.run(['sudo', 'cp', counter_file, f'/moe-interpretability-pv/moe_expert_ablation_{model}/{counter_file}'])
