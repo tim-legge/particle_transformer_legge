@@ -2382,8 +2382,8 @@ data_dir = f'/moe-interpretability-pv/moe_expert_ablation_{model}/'
 subprocess.run(['sudo', 'cp', f'/moe-interpretability-pv/moe_expert_ablation_{model}/counter.txt', 'counter.txt'])
 with open(f'counter.txt', 'r') as f:
     start_idx = int(f.read().strip())
-    if os.listdir(f'/moe-interpretability-pv/datasets/moe_expert_ablation_{model}/'):
-        existing_files = os.listdir(f'/moe-interpretability-pv/datasets/moe_expert_ablation_{model}/')
+    if os.listdir(f'/moe-interpretability-pv/moe_expert_ablation_{model}/'):
+        existing_files = os.listdir(f'/moe-interpretability-pv/moe_expert_ablation_{model}/')
         processed_ranges = []
         for file in existing_files:
             if file.startswith(f'y_pred_ablate_{ablated_experts_string}_') and file.endswith('.npy'):
