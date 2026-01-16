@@ -2378,9 +2378,16 @@ max_jets = 100000
 howmanyjets = num_jets
 ablated_experts_string = '_'.join([str(e) for e in ablated_experts])
 data_dir = f'/moe-interpretability-pv/moe_expert_ablation_{model}/'
+counter_file = f'counter_{ablated_experts_string}.txt'
 
-subprocess.run(['sudo', 'cp', f'/moe-interpretability-pv/moe_expert_ablation_{model}/counter.txt', 'counter.txt'])
-with open(f'counter.txt', 'r') as f:
+#check for counter file corresponding to specific ablation
+if not os.path.exists(f'/moe-interpretability-pv/moe_expert_ablation_{model}/counter_{ablated_experts_string}.txt'):
+    with open(counter_file, 'w') as f:
+        f.write('0')
+    subprocess.run(['sudo', 'cp', counter_file, data_dir])
+
+subprocess.run(['sudo', 'cp', f'/moe-interpretability-pv/moe_expert_ablation_{model}/{counter_file}', counter_file])
+with open(counter_file, 'r') as f:
     start_idx = int(f.read().strip())
     if os.listdir(f'/moe-interpretability-pv/moe_expert_ablation_{model}/'):
         existing_files = os.listdir(f'/moe-interpretability-pv/moe_expert_ablation_{model}/')
@@ -2395,7 +2402,7 @@ with open(f'counter.txt', 'r') as f:
             max_processed_end = max(end for _, end in processed_ranges)
             start_idx = max(start_idx, max_processed_end)
     print(f'Starting index: {start_idx}')
-subprocess.run(['sudo', 'chmod', '777', 'counter.txt'])
+subprocess.run(['sudo', 'chmod', '777', counter_file])
 
 while start_idx+howmanyjets <= max_jets:
 
@@ -2423,9 +2430,9 @@ while start_idx+howmanyjets <= max_jets:
         exit(1)
     start_idx += howmanyjets
     print(f'processed from {start_idx-howmanyjets} to {start_idx}, jets contained type {idx_to_label[(start_idx-howmanyjets)//max_jets]}')
-    with open('counter.txt', 'w') as f:
+    with open(counter_file, 'w') as f:
         f.write(str(start_idx))
-    subprocess.run(['sudo', 'cp', 'counter.txt', f'/moe-interpretability-pv/moe_expert_ablation_{model}/counter.txt'])
+    subprocess.run(['sudo', 'cp', counter_file, f'/moe-interpretability-pv/moe_expert_ablation_{model}/{counter_file}'])
 
 y_pred = np.array([])
 for file in os.listdir(data_dir):
