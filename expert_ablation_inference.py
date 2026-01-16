@@ -2400,8 +2400,12 @@ while start_idx+howmanyjets <= max_jets:
                                     torch.from_numpy(vectors),torch.from_numpy(masks))
     
     np.save(f'y_pred_ablate_{ablated_experts_string}_{start_idx}_{howmanyjets+start_idx}.npy', y_pred.cpu().numpy())
-    subprocess.run(['sudo', 'mv', f'y_pred_ablate_{ablated_experts_string}_{start_idx}_{howmanyjets+start_idx}.npy', 
-                    f'/moe-interpretability-pv/datasets/moe_expert_ablation_{model}/'])
+    try:
+        subprocess.run(['sudo', 'mv', f'y_pred_ablate_{ablated_experts_string}_{start_idx}_{howmanyjets+start_idx}.npy', 
+                    f'/moe-interpretability-pv/datasets/moe_expert_ablation_{model}/'], check=True)
+    except CalledProcessError as e:
+        print(f'Error copying file to PV: {e}')
+        exit(1)
     start_idx += howmanyjets
     print(f'processed from {start_idx-howmanyjets} to {start_idx}, jets contained type {idx_to_label[(start_idx-howmanyjets)//max_jets]}')
     with open('counter.txt', 'w') as f:
