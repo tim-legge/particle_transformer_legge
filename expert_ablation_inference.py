@@ -2403,6 +2403,9 @@ while start_idx+howmanyjets <= max_jets:
                     f'/moe-interpretability-pv/datasets/moe_expert_ablation_{model}/y_pred_ablate_{ablated_experts_string}_{start_idx}_{howmanyjets+start_idx}.npy'])
     start_idx += howmanyjets
     print(f'processed from {start_idx-howmanyjets} to {start_idx}, jets contained type {idx_to_label[(start_idx-howmanyjets)//max_jets]}')
+    with open('counter.txt', 'w') as f:
+        f.write(str(start_idx))
+    subprocess.run(['sudo', 'cp', 'counter.txt', f'/moe-interpretability-pv/moe_expert_ablation_{model}/counter.txt'])
 
 y_pred = np.array([])
 for file in os.listdir(f'/moe-interpretability-pv/datasets/moe_expert_ablation_{model}/'):
