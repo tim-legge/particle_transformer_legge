@@ -2376,6 +2376,7 @@ jet_type = 'jc'
 start_idx = 0
 max_jets = 100000
 howmanyjets = num_jets
+ablated_experts_string = '_'.join([str(e) for e in ablated_experts])
 
 subprocess.run(['sudo', 'cp', f'/moe-interpretability-pv/moe_expert_ablation_{model}/counter.txt', 'counter.txt'])
 with open(f'counter.txt', 'r') as f:
@@ -2398,14 +2399,14 @@ while start_idx+howmanyjets <= max_jets:
                                     torch.from_numpy(vectors),torch.from_numpy(masks))
     
     np.save(f'y_pred_ablate_{ablated_experts}_{start_idx}_{howmanyjets+start_idx}.npy', y_pred.cpu().numpy())
-    subprocess.run(['sudo', 'mv', f'y_pred_ablate_{ablated_experts}_{start_idx}_{howmanyjets+start_idx}.npy', 
-                    f'/moe-interpretability-pv/datasets/moe_expert_ablation_{model}/y_pred_ablate_{ablated_experts}_{start_idx}_{howmanyjets+start_idx}.npy'])
+    subprocess.run(['sudo', 'mv', f'y_pred_ablate_{ablated_experts_string}_{start_idx}_{howmanyjets+start_idx}.npy', 
+                    f'/moe-interpretability-pv/datasets/moe_expert_ablation_{model}/y_pred_ablate_{ablated_experts_string}_{start_idx}_{howmanyjets+start_idx}.npy'])
     start_idx += howmanyjets
     print(f'processed from {start_idx-howmanyjets} to {start_idx}, jets contained type {idx_to_label[(start_idx-howmanyjets)//max_jets]}')
 
 y_pred = np.array([])
 for file in os.listdir(f'/moe-interpretability-pv/datasets/moe_expert_ablation_{model}/'):
-    if file.startswith(f'y_pred_ablate_{ablated_experts}_') and file.endswith('.npy'):
+    if file.startswith(f'y_pred_ablate_{ablated_experts_string}_') and file.endswith('.npy'):
         part = np.load(f'/moe-interpretability-pv/datasets/moe_expert_ablation_{model}/{file}', allow_pickle=True)
         if y_pred.size == 0:
             y_pred = part
@@ -2417,8 +2418,8 @@ print(f'When ablating Experts {ablated_experts}, accuracy over {howmanyjets} jet
 
 with open(f'results.txt', 'w') as f:
     f.write(f'Model: {model}\n')
-    f.write(f'When ablating Experts {ablated_experts}, accuracy over {howmanyjets} jets: {accuracy*100:.2f}%\n')
-subprocess.run(['sudo', 'cp', 'results.txt', f'/moe-interpretability-pv/moe_expert_ablation_{model}/results_ablate_{ablated_experts}.txt'])
+    f.write(f'When ablating Experts {ablated_experts_string}, accuracy over {howmanyjets} jets: {accuracy*100:.2f}%\n')
+subprocess.run(['sudo', 'cp', 'results.txt', f'/moe-interpretability-pv/moe_expert_ablation_{model}/results_ablate_{ablated_experts_string}.txt'])
 
 # background rejection
 efficiency = np.ones(labels.shape[1]) * 0.5
