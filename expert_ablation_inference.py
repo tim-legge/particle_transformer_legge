@@ -2377,10 +2377,23 @@ start_idx = 0
 max_jets = 100000
 howmanyjets = num_jets
 ablated_experts_string = '_'.join([str(e) for e in ablated_experts])
+data_dir = f'/moe-interpretability-pv/datasets/moe_expert_ablation_{model}/'
 
 subprocess.run(['sudo', 'cp', f'/moe-interpretability-pv/moe_expert_ablation_{model}/counter.txt', 'counter.txt'])
 with open(f'counter.txt', 'r') as f:
     start_idx = int(f.read().strip())
+    if os.listdir(f'/moe-interpretability-pv/datasets/moe_expert_ablation_{model}/'):
+        existing_files = os.listdir(f'/moe-interpretability-pv/datasets/moe_expert_ablation_{model}/')
+        processed_ranges = []
+        for file in existing_files:
+            if file.startswith(f'y_pred_ablate_{ablated_experts_string}_') and file.endswith('.npy'):
+                parts = file.split('_')
+                range_part = parts[-1].replace('.npy', '')
+                start_range, end_range = map(int, range_part.split('_'))
+                processed_ranges.append((start_range, end_range))
+        if processed_ranges:
+            max_processed_end = max(end for _, end in processed_ranges)
+            start_idx = max(start_idx, max_processed_end)
     print(f'Starting index: {start_idx}')
 subprocess.run(['sudo', 'chmod', '777', 'counter.txt'])
 
@@ -2398,11 +2411,13 @@ while start_idx+howmanyjets <= max_jets:
     with torch.no_grad():
         y_pred = MoE_model(torch.from_numpy(points),torch.from_numpy(features),
                                     torch.from_numpy(vectors),torch.from_numpy(masks))
+        
+    filename = f'y_pred_ablate_{ablated_experts_string}_{start_idx}_{howmanyjets+start_idx}.npy'
     
-    np.save(f'y_pred_ablate_{ablated_experts_string}_{start_idx}_{howmanyjets+start_idx}.npy', y_pred.cpu().numpy())
+    np.save(filename, y_pred.cpu().numpy())
     try:
-        subprocess.run(['sudo', 'mv', f'y_pred_ablate_{ablated_experts_string}_{start_idx}_{howmanyjets+start_idx}.npy', 
-                    f'/moe-interpretability-pv/datasets/moe_expert_ablation_{model}/'], check=True)
+        subprocess.run(['sudo', 'mv', filename, 
+                    data_dir], check=True)
     except subprocess.CalledProcessError as e:
         print(f'Error copying file to PV: {e}')
         exit(1)
@@ -2413,9 +2428,9 @@ while start_idx+howmanyjets <= max_jets:
     subprocess.run(['sudo', 'cp', 'counter.txt', f'/moe-interpretability-pv/moe_expert_ablation_{model}/counter.txt'])
 
 y_pred = np.array([])
-for file in os.listdir(f'/moe-interpretability-pv/datasets/moe_expert_ablation_{model}/'):
+for file in os.listdir(data_dir):
     if file.startswith(f'y_pred_ablate_{ablated_experts_string}_') and file.endswith('.npy'):
-        part = np.load(f'/moe-interpretability-pv/datasets/moe_expert_ablation_{model}/{file}', allow_pickle=True)
+        part = np.load(data_dir+f'{file}', allow_pickle=True)
         if y_pred.size == 0:
             y_pred = part
         else:
