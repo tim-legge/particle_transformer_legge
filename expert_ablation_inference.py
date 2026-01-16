@@ -2377,7 +2377,7 @@ start_idx = 0
 max_jets = 100000
 howmanyjets = num_jets
 ablated_experts_string = '_'.join([str(e) for e in ablated_experts])
-data_dir = f'/moe-interpretability-pv/datasets/moe_expert_ablation_{model}/'
+data_dir = f'/moe-interpretability-pv/moe_expert_ablation_{model}/'
 
 subprocess.run(['sudo', 'cp', f'/moe-interpretability-pv/moe_expert_ablation_{model}/counter.txt', 'counter.txt'])
 with open(f'counter.txt', 'r') as f:
