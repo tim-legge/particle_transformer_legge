@@ -2403,7 +2403,7 @@ while start_idx+howmanyjets <= max_jets:
     try:
         subprocess.run(['sudo', 'mv', f'y_pred_ablate_{ablated_experts_string}_{start_idx}_{howmanyjets+start_idx}.npy', 
                     f'/moe-interpretability-pv/datasets/moe_expert_ablation_{model}/'], check=True)
-    except CalledProcessError as e:
+    except subprocess.CalledProcessError as e:
         print(f'Error copying file to PV: {e}')
         exit(1)
     start_idx += howmanyjets
