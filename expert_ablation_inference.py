@@ -2450,7 +2450,7 @@ efficiency = np.ones(labels.shape[1]) * 0.5
 rejections = []
 import sklearn.metrics as metrics
 for label in range(labels.shape[1]):
-    auc = metrics.roc_auc_score(labels[:,label], y_pred[:,label].cpu().numpy())
+    auc = metrics.roc_auc_score(labels[:,label], y_pred[:,label])
     print(f'Ablating Experts {ablated_experts}')
     print(f'Label {label} ({idx_to_label[label]}): AUC: {auc:.4f}')
     fpr, tpr, thresholds = metrics.roc_curve(labels[:,label], y_pred[:,label], pos_label=1)
