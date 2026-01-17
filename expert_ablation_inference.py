@@ -2426,19 +2426,19 @@ while start_idx+howmanyjets <= max_jets:
         f.write(str(start_idx))
     subprocess.run(['sudo', 'cp', counter_file, f'/moe-interpretability-pv/moe_expert_ablation_{model}/{counter_file}'])
 
-y_pred = np.array([])
+y_pred = np.empty((max_jets, 10))
 for file in os.listdir(data_dir):
     if file.startswith(f'y_pred_ablate_{ablated_experts_string}_') and file.endswith('.npy'):
+        range_idxs = file[len(f'y_pred_ablate_{ablated_experts_string}_'):-4]
+        start, end = map(int, range_idxs.split('_'))
+        print(f'Loading predictions from jets {start} to {end}')
         part = np.load(data_dir+f'{file}', allow_pickle=True)
-        if y_pred.size == 0:
-            y_pred = part
-        else:
-            y_pred = np.concatenate((y_pred, part), axis=0)
+        y_pred[start:end, :] = part
 
 labels = np.load('/moe-interpretability-pv/datasets/jc_full_labels.npy', allow_pickle=True)[:y_pred.shape[0]]
 
-accuracy = (y_pred.argmax(axis=1) == labels.argmax(axis=1)).sum() / howmanyjets
-print(f'When ablating Experts {ablated_experts}, accuracy over {howmanyjets} jets: {accuracy*100:.2f}%')
+accuracy = (y_pred.argmax(axis=1) == labels.argmax(axis=1)).sum() / y_pred.shape[0]
+print(f'When ablating Experts {ablated_experts}, accuracy over {y_pred.shape} jets: {accuracy*100:.2f}%')
 
 with open(f'results.txt', 'w') as f:
     f.write(f'Model: {model}\n')
