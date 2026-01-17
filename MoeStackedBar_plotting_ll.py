@@ -38,7 +38,7 @@ data_dir = f'/moe-interpretability-pv/moe_stacked_bars_100k_data_{model}_ll/'
 
 for label_idx, label in idx_to_label.items():
     for file in os.listdir(data_dir):
-        if file.endswith('ll.npy'):
+        if file.endswith('.npy'):
                 expert_idx_in_file = int(file.split('expert_')[1].split('_')[0])
                 data = np.load(data_dir+f'{file}', allow_pickle=True)
                 for expert_idx in range(num_experts):
