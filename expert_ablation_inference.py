@@ -2435,6 +2435,8 @@ for file in os.listdir(data_dir):
         else:
             y_pred = np.concatenate((y_pred, part), axis=0)
 
+labels = np.load('/moe-interpretability-pv/datasets/jc_full_labels.npy', allow_pickle=True)[:y_pred.shape[0]]
+
 accuracy = (y_pred.argmax(axis=1) == labels.argmax(axis=1)).sum() / howmanyjets
 print(f'When ablating Experts {ablated_experts}, accuracy over {howmanyjets} jets: {accuracy*100:.2f}%')
 
