@@ -2431,7 +2431,7 @@ for file in os.listdir(data_dir):
     if file.startswith(f'y_pred_ablate_{ablated_experts_string}_') and file.endswith('.npy'):
         range_idxs = file[len(f'y_pred_ablate_{ablated_experts_string}_'):-4]
         start, end = map(int, range_idxs.split('_'))
-        print(f'Loading predictions from jets {start} to {end}')
+        #print(f'Loading predictions from jets {start} to {end}')
         part = np.load(data_dir+f'{file}', allow_pickle=True)
         y_pred[start:end, :] = part
 
