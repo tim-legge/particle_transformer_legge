@@ -40,6 +40,7 @@ colors = plt.rcParams['axes.prop_cycle'].by_key()['color']
 plt.style.use(hep.style.ROOT)
 plt.rcParams['axes.prop_cycle'] = plt.cycler(color=colors)
 
+import subprocess
 import argparse
 
 parser = argparse.ArgumentParser(description='Running inference to study last-layer experts')
@@ -51,7 +52,6 @@ parser.add_argument('-n', '--num_jets', type=int, required=False,
 model = parser.parse_args().model
 chunk = parser.parse_args().chunk
 num_jets = parser.parse_args().num_jets
-
 
 # functions to facilitate modded Multihead
 
