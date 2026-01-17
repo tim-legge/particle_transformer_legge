@@ -2435,7 +2435,7 @@ for file in os.listdir(data_dir):
         else:
             y_pred = np.concatenate((y_pred, part), axis=0)
 
-accuracy = (y_pred.argmax(dim=1).cpu().numpy() == labels.argmax(axis=1)).sum() / howmanyjets
+accuracy = (y_pred.argmax(axis=1) == labels.argmax(axis=1)).sum() / howmanyjets
 print(f'When ablating Experts {ablated_experts}, accuracy over {howmanyjets} jets: {accuracy*100:.2f}%')
 
 with open(f'results.txt', 'w') as f:
