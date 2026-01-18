@@ -43,9 +43,11 @@ plt.rcParams['axes.prop_cycle'] = plt.cycler(color=colors)
 import subprocess
 import argparse
 
+total_chunks = 10
+
 parser = argparse.ArgumentParser(description='Running inference to study last-layer experts')
 parser.add_argument('-m', '--model', type=str, required=True, help='Model name, (seed_0, seed_1, 10_pct)')
-parser.add_argument('-c', '--chunk', type=int, required=True, help='Which chunk of the dataset to run on (0-9)')
+parser.add_argument('-c', '--chunk', type=int, required=True, help=f'Which chunk of the dataset to run on (0-{total_chunks-1})')
 parser.add_argument('-n', '--num_jets', type=int, required=False, 
                     default=1000, help='number of jets to run inference on per step (default 1000)')
 
@@ -2369,7 +2371,7 @@ model = get_model(data_type='jc_full')[0]
 state_dict = torch.load(model_path, map_location='cpu')
 model.load_state_dict(state_dict)
 maxjets = 100000
-start_idx = chunk*(maxjets//10)
+start_idx = chunk*(maxjets//total_chunks)
 
 counter_file = f'counter_stacked_MoE_bars_100k_chunk_{chunk}.txt'
 
@@ -2386,7 +2388,7 @@ import subprocess
 
 howmanyjets = num_jets
 
-while start_idx < (chunk + 1)*(maxjets//10):
+while start_idx < (chunk + 1)*(maxjets//total_chunks):
     print(f'Chunk {chunk}: Beginning at index {start_idx}/100000...')
     logging.info(f'Chunk {chunk}: Beginning at index {start_idx}/100000...')
     
