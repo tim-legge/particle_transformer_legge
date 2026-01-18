@@ -2485,6 +2485,7 @@ while start_idx < 10:
             hist_counts += hist
         
         np.save(f'sparsity_hist_counts_start_idx_{start_idx}.npy', hist_counts)
+        subprocess.run(['sudo', 'cp', f'./sparsity_hist_counts_start_idx_{start_idx}.npy', f'/moe-interpretability-pv/moe_sparsity_hists_{model}/'])
 
     # Simulate loading a large dataset in chunks (e.g., from a file or other source)
     def attention_generator(attention, chunk_size):
