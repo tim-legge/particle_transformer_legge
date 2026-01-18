@@ -2340,7 +2340,7 @@ class Pre_Softmax_Hook:
             padding_limits.append(padding_limit)
             #tensor_as_ak[:,jet_idx,:,:,:] = tensor_as_ak[:,jet_idx,:,:padding_limit, :padding_limit]
         
-        print(f'Padding Limit: {padding_limits}')
+        #print(f'Padding Limit: {padding_limits}')
 
         return padding_limits
 
