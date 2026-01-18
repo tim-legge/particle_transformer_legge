@@ -2413,6 +2413,50 @@ import subprocess
 subprocess.run(['sudo', 'cp', f'/moe-interpretability-pv/moe_sparsity_hists_{model}/counter.txt', './counter.txt'])
 subprocess.run(['sudo', 'chmod', '777', './counter.txt'])
 
+
+device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+print(f'Using device: {device}')
+
+idx_to_label = {
+    0: 'Higgs BB',
+    1: 'Higgs CC',
+    2: 'Higgs GG',
+    3: 'Higgs QQL',
+    4: 'Higgs 4Q',
+    5: 'Top BL',
+    6: 'Top BQQ',
+    7: 'W QQ',
+    8: 'QCD',
+    9: 'Z QQ'
+}
+
+# Define number of bins for the probability distribution
+num_bins = 20
+
+# Define the bin edges between 0 and 1, using 20 evenly spaced bins
+bin_edges = np.linspace(0, 1, num_bins + 1)
+
+# Function to process data in chunks and compute histogram
+def process_in_chunks(attention_iterator, chunk_size=100000, bin_edges=bin_edges):
+    hist_counts = np.zeros(len(bin_edges) - 1)  # Initialize histogram counts for bins
+
+    # Process each chunk of attention data
+    for chunk in attention_iterator:
+        # Flatten the chunk to ensure it's 1D and processable by np.histogram
+        chunk = np.array(chunk).flatten()
+
+        # Calculate histogram for this chunk
+        hist, _ = np.histogram(chunk, bins=bin_edges)
+
+        # Accumulate the counts
+        hist_counts += hist
+
+# Simulate loading a large dataset in chunks (e.g., from a file or other source)
+    def attention_generator(attention, chunk_size):
+        """Simulate chunked data loader for large dataset."""
+        for i in range(0, len(attention), chunk_size):
+            yield attention[i:i + chunk_size]
+
 with open(f'./counter.txt', 'r') as f:
     start_idx = int(f.read().strip())
 
@@ -2425,22 +2469,6 @@ while start_idx < 10:
     labels = np.load('/moe-interpretability-pv/datasets/jc_full_labels.npy', allow_pickle=True)[start_idx::100000//howmanyjets]
     vectors = np.load('/moe-interpretability-pv/datasets/jc_full_pf_vectors.npy', allow_pickle=True)[start_idx::100000//howmanyjets]
     points = np.load('/moe-interpretability-pv/datasets/jc_full_pf_points.npy', allow_pickle=True)[start_idx::100000//howmanyjets]
-
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
-    print(f'Using device: {device}')
-
-    idx_to_label = {
-        0: 'Higgs BB',
-        1: 'Higgs CC',
-        2: 'Higgs GG',
-        3: 'Higgs QQL',
-        4: 'Higgs 4Q',
-        5: 'Top BL',
-        6: 'Top BQQ',
-        7: 'W QQ',
-        8: 'QCD',
-        9: 'Z QQ'
-    }
 
     MoE_model.eval()
     with torch.no_grad():
@@ -2462,36 +2490,9 @@ while start_idx < 10:
     flattened_attention = np.empty(0)
     for item in unpadded_attentions:
         flattened_attention = np.concatenate((flattened_attention, np.array(item)))
-
-    # Define number of bins for the probability distribution
-    num_bins = 20
-
-    # Define the bin edges between 0 and 1, using 20 evenly spaced bins
-    bin_edges = np.linspace(0, 1, num_bins + 1)
-
-    # Function to process data in chunks and compute histogram
-    def process_in_chunks(attention_iterator, chunk_size=100000, bin_edges=bin_edges):
-        hist_counts = np.zeros(len(bin_edges) - 1)  # Initialize histogram counts for bins
-
-        # Process each chunk of attention data
-        for chunk in attention_iterator:
-            # Flatten the chunk to ensure it's 1D and processable by np.histogram
-            chunk = np.array(chunk).flatten()
-
-            # Calculate histogram for this chunk
-            hist, _ = np.histogram(chunk, bins=bin_edges)
-
-            # Accumulate the counts
-            hist_counts += hist
         
         np.save(f'sparsity_hist_counts_start_idx_{start_idx}.npy', hist_counts)
         subprocess.run(['sudo', 'cp', f'./sparsity_hist_counts_start_idx_{start_idx}.npy', f'/moe-interpretability-pv/moe_sparsity_hists_{model}/'])
-
-    # Simulate loading a large dataset in chunks (e.g., from a file or other source)
-    def attention_generator(attention, chunk_size):
-        """Simulate chunked data loader for large dataset."""
-        for i in range(0, len(attention), chunk_size):
-            yield attention[i:i + chunk_size]
     
     process_in_chunks(attention_generator(flattened_attention, chunk_size=100000))
 
@@ -2509,9 +2510,8 @@ for file in os.listdir(f'/moe-interpretability-pv/moe_sparsity_hists_{model}/'):
             total_hist_counts += hist_counts
         else:
             total_hist_counts = hist_counts
-        np.save(os.path.join(f'/moe-interpretability-pv/moe_sparsity_hists_{model}/', 'total_hist_counts.npy'), total_hist_counts)
+        np.save('total_hist_counts.npy', total_hist_counts)
 
-total_hist_counts = np.load(os.path.join(f'/moe-interpretability-pv/moe_sparsity_hists_{model}/', 'total_hist_counts.npy'))
 total_hist_sum = np.sum(total_hist_counts)
 probabilities = total_hist_counts / total_hist_sum  # Normalize to get probabilities
 

@@ -40,8 +40,19 @@ colors = plt.rcParams['axes.prop_cycle'].by_key()['color']
 plt.style.use(hep.style.ROOT)
 plt.rcParams['axes.prop_cycle'] = plt.cycler(color=colors)
 
+import subprocess
+import argparse
 
-# %%
+parser = argparse.ArgumentParser(description='Running inference to study last-layer experts')
+parser.add_argument('-m', '--model', type=str, required=True, help='Model name, (seed_0, seed_1, 10_pct)')
+parser.add_argument('-c', '--chunk', type=int, required=True, help='Which chunk of the dataset to run on (0-9)')
+parser.add_argument('-n', '--num_jets', type=int, required=False, 
+                    default=1000, help='number of jets to run inference on per step (default 1000)')
+
+model = parser.parse_args().model
+chunk = parser.parse_args().chunk
+num_jets = parser.parse_args().num_jets
+
 # functions to facilitate modded Multihead
 
 def _canonical_mask(
@@ -664,7 +675,7 @@ def multi_head_attention_forward(
         return attn_output, None
 
 
-# %%
+
 # Modified Multihead to get pre-softmax
 
 class MultiheadAttention(nn.Module):
@@ -1180,10 +1191,10 @@ class MultiheadAttention(nn.Module):
         return merged_mask, mask_type
 
 
-# %%
 
 
-# %%
+
+
 import math
 import random
 import warnings
@@ -1904,7 +1915,7 @@ class MoeParticleTransformer(nn.Module):
             return output
 
 
-# %%
+
 
 class MoeParticleTransformerTagger(nn.Module):
 
@@ -2128,7 +2139,7 @@ def get_model(data_type=None, **kwargs):
 def get_loss(data_config, **kwargs):
     return torch.nn.CrossEntropyLoss()
 
-# %%
+
 class Pre_Softmax_Hook:
     def __init__(self, model):
         self.model = model
@@ -2252,7 +2263,7 @@ class Pre_Softmax_Hook:
         self.handle_inter.remove()
 
 
-# %%
+
 class Router_Hook:
     def __init__(self, model):
         self.model = model
@@ -2264,9 +2275,9 @@ class Router_Hook:
         #for module in self.model.blocks[:0]:  # only hook the last MoE layer
         collect_assignments = self.model.blocks[0].register_forward_hook(lambda *args, **kwargs: Router_Hook.collect_expert_assignments(self, *args, **kwargs))
         print(f"Registered hook onto particle module")    
-        for module in self.model.cls_blocks[-1:]:  # only hook the last MoE layer
-            cls_collect_assignments = module.register_forward_hook(lambda *args, **kwargs: Router_Hook.cls_collect_expert_assignments(self, *args, **kwargs))
-            print(f"Registered hook onto class module")
+        #for module in self.model.cls_blocks[-1:]:  # only hook the last MoE layer
+        #    cls_collect_assignments = module.register_forward_hook(lambda *args, **kwargs: Router_Hook.cls_collect_expert_assignments(self, *args, **kwargs))
+        #    print(f"Registered hook onto class module")
 
         self.expert_weights = torch.empty((0, self.model.moe_num_experts), dtype=torch.float32)
         self.expert_assignments = torch.empty((0, self.model.moe_num_experts), dtype=torch.float32)
@@ -2327,8 +2338,6 @@ class Router_Hook:
         self.collect_assignments.remove()
         self.cls_collect_expert_assignments.remove()
 
-
-# %%
 idx_to_label = {
     0: 'Higgs_BB',
     1: 'Higgs_CC',
@@ -2342,29 +2351,44 @@ idx_to_label = {
     9: 'Z_QQ'
 }
 
-# %%
-MoE_model = get_model('jc_full')[0]
 
-seed = 0
-model_path = f'models/jc_100_seed_{seed}_net_epoch_state.pt'
-data_dir = f'/moe-interpretability-pv/moe_stacked_bars_100k_data_seed_{seed}/'
-attempt = 0
+if model == '10_pct':
+    model_path = 'net_best_epoch_state.pt'
+    data_dir = f'/moe-interpretability-pv/moe_stacked_bars_100k_data/'
+elif model == 'seed_0':
+    model_path = f'models/jc_100_seed_0_net_epoch_state.pt'
+    data_dir = f'/moe-interpretability-pv/moe_stacked_bars_100k_data_seed_0/'
+elif model == 'seed_1':
+    model_path = f'models/jc_100_seed_1_net_epoch_state.pt'
+    data_dir = f'/moe-interpretability-pv/moe_stacked_bars_100k_data_seed_1/'
+else:
+    raise ValueError('Model type not recognized. Choose from: 10_pct, seed_0, seed_1.')
 
-MoE_statedict = torch.load(model_path, map_location=torch.device('cpu'))
-MoE_model.load_state_dict(MoE_statedict)
+model = get_model(data_type='jc_full')[0]
 
-# %%
-with open(data_dir+'counter_stacked_MoE_bars_100k.txt', 'r') as f:
-    start_counter = int(f.read().strip())
+state_dict = torch.load(model_path, map_location='cpu')
+model.load_state_dict(state_dict)
+maxjets = 100000
+start_idx = chunk*(maxjets//10)
+
+counter_file = f'counter_stacked_MoE_bars_100k_chunk_{chunk}.txt'
+
+if not os.path.exists(data_dir+counter_file):
+    with open(counter_file, 'w') as f:
+        f.write(f'{start_idx}')
+    subprocess.run(['sudo', 'mv', '-f', counter_file, data_dir])
+
+with open(data_dir+f'counter_stacked_MoE_bars_100k_chunk_{chunk}.txt', 'r') as f:
+    start_idx = int(f.read().strip())
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 import subprocess
 
-howmanyjets = 1000
+howmanyjets = num_jets
 
-while start_counter < 100000//howmanyjets:
-    print(f'Beginning iteration {start_counter}/{100000//howmanyjets}...')
-    start_idx = start_counter * howmanyjets
+while start_idx < (chunk + 1)*(maxjets//10):
+    print(f'Chunk {chunk}: Beginning at index {start_idx}/100000...')
+    logging.info(f'Chunk {chunk}: Beginning at index {start_idx}/100000...')
     
     features = np.load('/moe-interpretability-pv/datasets/jc_full_pf_features.npy', allow_pickle=True)[start_idx:howmanyjets+start_idx]
     masks = np.load('/moe-interpretability-pv/datasets/jc_full_pf_mask.npy', allow_pickle=True)[start_idx:howmanyjets+start_idx]
@@ -2373,29 +2397,29 @@ while start_counter < 100000//howmanyjets:
     points = np.load('/moe-interpretability-pv/datasets/jc_full_pf_points.npy', allow_pickle=True)[start_idx:howmanyjets+start_idx]
 
     jet_type = idx_to_label[start_idx // 10000]
-
-    # %%
-    router_hook = Router_Hook(model=MoE_model)
-    MoE_model.eval()
+    
+    router_hook = Router_Hook(model=model)
+    model.eval()
     with torch.no_grad():
-        y_pred = MoE_model(torch.from_numpy(points),torch.from_numpy(features),
+        y_pred = model(torch.from_numpy(points),torch.from_numpy(features),
                                     torch.from_numpy(vectors),torch.from_numpy(masks))
     print('Inference complete!')
-    # %%
+    
     stacking_data = [[weight for weight in router_hook.expert_weights[:,i].numpy() if weight != 0] for i in range(router_hook.model.moe_num_experts)]
 
     for expert_idx, weights in enumerate(stacking_data):
-        file_name = f'data_{start_idx}_to_{start_idx+1000}_jet_type_{jet_type}_expert_{expert_idx}_stacked_MoE_bars_100k_attempt_{attempt}.npy'
+        file_name = f'data_{start_idx}_to_{start_idx+howmanyjets}_jet_type_{jet_type}_expert_{expert_idx}_stacked_MoE_bars_100k.npy'
         np.save(file_name, np.array(weights))
         # get filesize
         filesize = subprocess.check_output(['du', '-h', file_name]).split()[0].decode('utf-8')
-        print(f'Saved expert {expert_idx} data for jets {start_idx} to {start_idx+1000}. File size: {filesize}')
+        #print(f'Saved expert {expert_idx} data for jets {start_idx} to {start_idx+1000}. File size: {filesize}')
         subprocess.run(['sudo', 'mv', file_name, data_dir])
     
-    start_counter += 1
-    with open('counter_stacked_MoE_bars_100k.txt', 'w') as f:
-        f.write(str(start_counter))
-
-    subprocess.run(['sudo', 'mv', '-f', 'counter_stacked_MoE_bars_100k.txt', f'{data_dir}'])
+    print(f'Iteration {start_idx}/100000 complete! Results saved as type {jet_type}, rerunning for next iteration...')
     
-    print(f'Iteration {start_counter}/{100000//howmanyjets} complete! Results saved as type {jet_type}, rerunning for next iteration...')
+    start_idx += howmanyjets
+
+    with open(counter_file, 'w') as f:
+        f.write(str(start_idx))
+
+    subprocess.run(['sudo', 'mv', '-f', counter_file, f'{data_dir}'])
