@@ -2536,7 +2536,7 @@ plt.yscale('log')
 
 # Add a title
 ax.set_title(f'Attention Distribution {model}', fontsize=16)
-plt.savefig(f'Attention Distribution {model}.pdf', bbox_inches="tight")
+plt.savefig(f'Attention_Distribution_{model}.pdf', bbox_inches="tight")
 
 # Show the plot
 plt.show()
