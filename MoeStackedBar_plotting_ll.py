@@ -10,7 +10,7 @@ plt.rcParams['axes.prop_cycle'] = plt.cycler(color=colors)
 import argparse
 
 parser = argparse.ArgumentParser(description='Expert Ablation')
-parser.add_argument('-m', '--model', type=str, required=True, help='Model name, (100k, seed_0, seed_1)')
+parser.add_argument('-m', '--model', type=str, required=True, help='Model name, (10_pct, seed_0, seed_1)')
 
 model = parser.parse_args().model
 
@@ -34,11 +34,16 @@ idx_to_label = {
     9: 'Z_QQ'
 }
 
-data_dir = f'/moe-interpretability-pv/moe_stacked_bars_100k_data_{model}_ll/'
+if model == 'seed_0':
+    data_dir = f'/moe-interpretability-pv/moe_stacked_bars_100k_data_{model}_ll/'
+elif model == 'seed_0':
+    data_dir = f'/moe-interpretability-pv/moe_stacked_bars_100k_data_{model}_ll/'
+else:
+    data_dir = f'/moe-interpretability-pv/moe_stacked_bars_100k_data_ll/'
 
 for label_idx, label in idx_to_label.items():
     for file in os.listdir(data_dir):
-        if file.endswith('.npy'):
+        if file.endswith('.npy') and not file.endswith('attempt_0.npy'):
                 expert_idx_in_file = int(file.split('expert_')[1].split('_')[0])
                 data = np.load(data_dir+f'{file}', allow_pickle=True)
                 for expert_idx in range(num_experts):
