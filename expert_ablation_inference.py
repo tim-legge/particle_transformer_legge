@@ -2440,6 +2440,19 @@ labels = np.load('/moe-interpretability-pv/datasets/jc_full_labels.npy', allow_p
 accuracy = (y_pred.argmax(axis=1) == labels.argmax(axis=1)).sum() / y_pred.shape[0]
 print(f'When ablating Experts {ablated_experts}, accuracy over {y_pred.shape} jets: {accuracy*100:.2f}%')
 
+label_idx_to_name = {
+    0: 'QCD',
+    1: 'H BB',
+    2: 'H CC',
+    3: 'H GG',
+    4: 'H 4Q',
+    5: 'H QQL',
+    6: 'Z QQ',
+    7: 'W QQ',
+    8: 'Top BQQ',
+    9: 'Top BL',
+}
+
 with open(f'results.txt', 'w') as f:
     f.write(f'Model: {model}\n')
     f.write(f'When ablating Experts {ablated_experts_string}, accuracy over {howmanyjets} jets: {accuracy*100:.2f}%\n')

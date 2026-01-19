@@ -36,7 +36,7 @@ idx_to_label = {
 
 if model == 'seed_0':
     data_dir = f'/moe-interpretability-pv/moe_stacked_bars_100k_data_{model}_ll/'
-elif model == 'seed_0':
+elif model == 'seed_1':
     data_dir = f'/moe-interpretability-pv/moe_stacked_bars_100k_data_{model}_ll/'
 else:
     data_dir = f'/moe-interpretability-pv/moe_stacked_bars_100k_data_ll/'
