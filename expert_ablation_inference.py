@@ -2393,11 +2393,11 @@ with open(counter_file, 'r') as f:
     #for file in existing_files:
     #    if file.endswith(f'{ablated_experts_string}_0_1000.npy'):
     #        start_idx = start_idx_from_counter
-    print(f'Starting index: {start_idx}')
+    
 subprocess.run(['sudo', 'chmod', '777', counter_file])
 
 while start_idx+howmanyjets <= max_jets:
-
+    print(f'Starting index: {start_idx}')
     features = np.load('/moe-interpretability-pv/datasets/jc_full_pf_features.npy', allow_pickle=True)[start_idx:howmanyjets+start_idx]
     masks = np.load('/moe-interpretability-pv/datasets/jc_full_pf_mask.npy', allow_pickle=True)[start_idx:howmanyjets+start_idx]
     labels = np.load('/moe-interpretability-pv/datasets/jc_full_labels.npy', allow_pickle=True)[start_idx:howmanyjets+start_idx]
@@ -2435,11 +2435,6 @@ for file in os.listdir(data_dir):
         part = np.load(data_dir+f'{file}', allow_pickle=True)
         y_pred[start:end, :] = part
 
-labels = np.load('/moe-interpretability-pv/datasets/jc_full_labels.npy', allow_pickle=True)[:y_pred.shape[0]]
-
-accuracy = (y_pred.argmax(axis=1) == labels.argmax(axis=1)).sum() / y_pred.shape[0]
-print(f'When ablating Experts {ablated_experts}, accuracy over {y_pred.shape} jets: {accuracy*100:.2f}%')
-
 label_idx_to_name = {
     0: 'QCD',
     1: 'H BB',
@@ -2453,26 +2448,33 @@ label_idx_to_name = {
     9: 'Top BL',
 }
 
+
+labels = np.load('/moe-interpretability-pv/datasets/jc_full_labels.npy', allow_pickle=True)[:y_pred.shape[0]]
+
+accuracy = (y_pred.argmax(axis=1) == labels.argmax(axis=1)).sum() / y_pred.shape[0]
+print(f'When ablating Experts {ablated_experts}, accuracy over {y_pred.shape} jets: {accuracy*100:.2f}%')
+
 with open(f'results.txt', 'w') as f:
     f.write(f'Model: {model}\n')
     f.write(f'When ablating Experts {ablated_experts_string}, accuracy over {howmanyjets} jets: {accuracy*100:.2f}%\n')
 subprocess.run(['sudo', 'cp', 'results.txt', f'/moe-interpretability-pv/moe_expert_ablation_{model}/results_ablate_{ablated_experts_string}.txt'])
 
 # background rejection
-efficiency = np.ones(labels.shape[1]) * 0.5
+efficiency = np.array([0.5, 0.5, 0.5, 0.5, 0.5, 0.99, 0.5, 0.5, 0.5, 0.995])  # target signal efficiencies for each label
 rejections = []
 import sklearn.metrics as metrics
 for label in range(labels.shape[1]):
     auc = metrics.roc_auc_score(labels[:,label], y_pred[:,label])
     print(f'Ablating Experts {ablated_experts}')
-    print(f'Label {label} ({idx_to_label[label]}): AUC: {auc:.4f}')
+    print(f'Label {label} ({label_idx_to_name[label]}): AUC: {auc:.4f}')
     fpr, tpr, thresholds = metrics.roc_curve(labels[:,label], y_pred[:,label], pos_label=1)
     sig_idx = np.argmin(np.abs(tpr - efficiency[label]))
     rejections.append(1.0 / fpr[sig_idx])
     print(f'Label {label} ({idx_to_label[label]}): Background rejection at {efficiency[label]*100}% signal efficiency: {rejections[-1]:.2f}')
     with open(f'results.txt', 'a') as f:
-        f.write(f'Label {label} ({idx_to_label[label]}): AUC: {auc:.4f}\n')
-        f.write(f'Label {label} ({idx_to_label[label]}): Background rejection at {efficiency[label]*100}% signal efficiency: {rejections[-1]:.2f}\n')
+        f.write(f'Label {label} ({label_idx_to_name[label]}): AUC: {auc:.4f}\n')
+        f.write(f'Label {label} ({label_idx_to_name[label]}): Background rejection at {efficiency[label]*100}% signal efficiency: {rejections[-1]:.2f}\n')
+    subprocess.run(['sudo', 'cp', 'results.txt', f'/moe-interpretability-pv/moe_expert_ablation_{model}/results_ablate_{ablated_experts_string}.txt'])
 
 feature_ids = {
     0: 'part_pt_log',
