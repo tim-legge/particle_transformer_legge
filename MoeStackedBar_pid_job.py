@@ -2356,7 +2356,7 @@ idx_to_label = {
 
 if model == '10_pct':
     model_path = 'net_best_epoch_state.pt'
-    data_dir = f'/moe-interpretability-pv/moe_stacked_bars_100k_pid_data/'
+    data_dir = f'/moe-interpretability-pv/moe_stacked_bars_100k_pid_data_10_pct/'
 elif model == 'seed_0':
     model_path = f'models/jc_100_seed_0_net_epoch_state.pt'
     data_dir = f'/moe-interpretability-pv/moe_stacked_bars_100k_pid_data_seed_0/'
