@@ -2352,7 +2352,7 @@ class Router_Hook:
 
 MoE_model = get_model('jc_full', ablated_last_layer_experts=ablated_experts)[0]
 
-if model == '100k':
+if model == '10_pct':
     modelpath = 'net_best_epoch_state.pt'
 elif model == 'seed_0':
     modelpath = 'models/jc_100_seed_0_net_epoch_state.pt'
