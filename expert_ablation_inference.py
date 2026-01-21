@@ -43,12 +43,18 @@ plt.rcParams['axes.prop_cycle'] = plt.cycler(color=colors)
 
 import argparse
 
+total_chunks = 10
+
 parser = argparse.ArgumentParser(description='Expert Ablation')
 parser.add_argument('-e', '--expert', type=int, required=True, help='Expert index to ablate')
 parser.add_argument('-m', '--model', type=str, required=True, help='Model name')
+parser.add_argument('-c', '--chunk', type=int, required=True, help='Chunk index for job array')
+parser.add_argument('-l', '--layer', type=int, default=-1, help='Layer index to ablate expert from (default: last layer)')
 parser.add_argument('-n', '--num-jets', type=int, default=1000, help='Number of jets to process')
 
 model = parser.parse_args().model
+layer = parser.parse_args().layer
+chunk = parser.parse_args().chunk
 ablated_experts = np.array([parser.parse_args().expert]) if parser.parse_args().expert >=0 else np.array([])
 num_jets = parser.parse_args().num_jets
 
@@ -2277,11 +2283,11 @@ class Router_Hook:
             self.model = self.model.mod
 
         #for module in self.model.blocks[:0]:  # only hook the last MoE layer
-        collect_assignments = self.model.blocks[-1].register_forward_hook(lambda *args, **kwargs: Router_Hook.collect_expert_assignments(self, *args, **kwargs))
+        collect_assignments = self.model.blocks[layer].register_forward_hook(lambda *args, **kwargs: Router_Hook.collect_expert_assignments(self, *args, **kwargs))
         print(f"Registered hook onto particle module")    
-        for module in self.model.cls_blocks[-1:]:  # only hook the last MoE layer
-            cls_collect_assignments = module.register_forward_hook(lambda *args, **kwargs: Router_Hook.cls_collect_expert_assignments(self, *args, **kwargs))
-            print(f"Registered hook onto class module")
+        #for module in self.model.cls_blocks[-1:]:  # only hook the last MoE layer
+        #    cls_collect_assignments = module.register_forward_hook(lambda *args, **kwargs: Router_Hook.cls_collect_expert_assignments(self, *args, **kwargs))
+        #    print(f"Registered hook onto class module")
 
         self.expert_weights = torch.empty((0, self.model.moe_num_experts), dtype=torch.float32)
         self.expert_assignments = torch.empty((0, self.model.moe_num_experts), dtype=torch.float32)
@@ -2373,20 +2379,25 @@ idx_to_label = {
 
 # In pod: pull multiple jet types
 jet_type = 'jc'
-start_idx = 0
 max_jets = 100000
+start_idx = chunk*(max_jets//total_chunks)
 howmanyjets = num_jets
 ablated_experts_string = '_'.join([str(e) for e in ablated_experts])
-data_dir = f'/moe-interpretability-pv/moe_expert_ablation_{model}/'
-counter_file = f'counter_{ablated_experts_string}.txt'
+data_dir = f'/moe-interpretability-pv/moe_expert_ablation_l{layer}_{model}/'
+counter_file = f'counter_{ablated_experts_string}_chunk_{chunk}.txt'
+
+#make data directory if it doesn't exist
+if not os.path.exists(data_dir):
+    subprocess.run(['sudo', 'mkdir', data_dir])
+    subprocess.run(['sudo', 'chmod', '777', data_dir])
 
 #check for counter file corresponding to specific ablation
-if not os.path.exists(f'/moe-interpretability-pv/moe_expert_ablation_{model}/counter_{ablated_experts_string}.txt'):
+if not os.path.exists(data_dir+counter_file):
     with open(counter_file, 'w') as f:
-        f.write('0')
+        f.write(f'{start_idx}')
     subprocess.run(['sudo', 'cp', counter_file, data_dir])
 
-subprocess.run(['sudo', 'cp', f'/moe-interpretability-pv/moe_expert_ablation_{model}/{counter_file}', counter_file])
+subprocess.run(['sudo', 'cp', data_dir+counter_file, counter_file])
 with open(counter_file, 'r') as f:
     start_idx = int(f.read().strip())
     #existing_files = os.listdir(f'/moe-interpretability-pv/moe_expert_ablation_{model}/')
@@ -2396,7 +2407,7 @@ with open(counter_file, 'r') as f:
     
 subprocess.run(['sudo', 'chmod', '777', counter_file])
 
-while start_idx+howmanyjets <= max_jets:
+while start_idx < (chunk + 1)*(max_jets//total_chunks):
     print(f'Starting index: {start_idx}')
     features = np.load('/moe-interpretability-pv/datasets/jc_full_pf_features.npy', allow_pickle=True)[start_idx:howmanyjets+start_idx]
     masks = np.load('/moe-interpretability-pv/datasets/jc_full_pf_mask.npy', allow_pickle=True)[start_idx:howmanyjets+start_idx]
@@ -2448,7 +2459,6 @@ label_idx_to_name = {
     9: 'Top BL',
 }
 
-
 labels = np.load('/moe-interpretability-pv/datasets/jc_full_labels.npy', allow_pickle=True)[:y_pred.shape[0]]
 
 accuracy = (y_pred.argmax(axis=1) == labels.argmax(axis=1)).sum() / y_pred.shape[0]
@@ -2456,7 +2466,7 @@ print(f'When ablating Experts {ablated_experts}, accuracy over {y_pred.shape} je
 
 with open(f'results.txt', 'w') as f:
     f.write(f'Model: {model}\n')
-    f.write(f'When ablating Experts {ablated_experts_string}, accuracy over {howmanyjets} jets: {accuracy*100:.2f}%\n')
+    f.write(f'When ablating Experts {ablated_experts_string}, accuracy over {max_jets} jets: {accuracy*100:.2f}%\n')
 subprocess.run(['sudo', 'cp', 'results.txt', f'/moe-interpretability-pv/moe_expert_ablation_{model}/results_ablate_{ablated_experts_string}.txt'])
 
 # background rejection
