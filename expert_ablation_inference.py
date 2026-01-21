@@ -49,7 +49,7 @@ parser.add_argument('-m', '--model', type=str, required=True, help='Model name')
 parser.add_argument('-n', '--num-jets', type=int, default=1000, help='Number of jets to process')
 
 model = parser.parse_args().model
-ablated_experts = np.array([parser.parse_args().expert])
+ablated_experts = np.array([parser.parse_args().expert]) if parser.parse_args().expert >=0 else np.array([])
 num_jets = parser.parse_args().num_jets
 
 # functions to facilitate modded Multihead

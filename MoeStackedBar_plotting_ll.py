@@ -59,7 +59,7 @@ for label_idx, label in idx_to_label.items():
     agglomerated_data = [np.append(agglomerated_data[expert_idx], expert_weight_data[expert_idx]) for expert_idx in range(num_experts)]
     total_counts = sum([len(expert_weight_data[expert_idx]) for expert_idx in range(num_experts)])
     percentages = np.round(np.array([len(expert_weight_data[expert_idx]) / total_counts * 100 for expert_idx in range(num_experts)]), 1)
-
+    expert_entropy = -np.sum(np.log(percentages/100)*percentages/100)
     fig, ax = plt.subplots()
     ax.hist(expert_weight_data, bins=num_bins, histtype='barstacked', label=[f'Expert {i}: {percentages[i]}%' for i in range(num_experts)], density=True, color=plt.cm.tab10.colors[:num_experts])
     ax.legend(fontsize=18, loc='upper left')
@@ -94,11 +94,12 @@ for label_idx, label in idx_to_label.items():
 
 total_counts = sum([len(agglomerated_data[expert_idx]) for expert_idx in range(num_experts)])
 percentages = np.round(np.array([len(agglomerated_data[expert_idx]) / total_counts * 100 for expert_idx in range(num_experts)]), 1)
+expert_entropy = -np.sum(np.log(percentages/100)*percentages/100)
 
 fig, ax = plt.subplots()
-ax.hist(agglomerated_data, bins=num_bins, histtype='barstacked', label=[f'Expert {i}: {percentages[i]}%' for i in range(num_experts)], density=True, color=plt.cm.tab10.colors[:num_experts])
-ax.legend(fontsize=18, loc='upper left')
-ax.set_title(f'Distribution of Expert Weights, All Jets')
+hists, = ax.hist(agglomerated_data, bins=num_bins, histtype='barstacked', label=[f'Expert {i}: {percentages[i]}%' for i in range(num_experts)], density=True, color=plt.cm.tab10.colors[:num_experts])
+ax.legend(handles = [hists], fontsize=18, loc='upper left')
+ax.set_title(f'Expert Weights, All Jets')
 plt.savefig(f'./MoeStackedBar_plot_all_100k.png')
 plt.close()
 
