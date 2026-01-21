@@ -2436,11 +2436,11 @@ while start_idx < (chunk + 1)*(maxjets//total_chunks):
     # lists of indices where each particle type appears
     particle_indices = []
     # ordering is charged_hadron, neutral_hadron, photon, electron, muon
-    particle_indices.append(np.where(flat_features[:, feature_ids[6]] == 1)[0])
-    particle_indices.append(np.where(flat_features[:, feature_ids[7]] == 1)[0])
-    particle_indices.append(np.where(flat_features[:, feature_ids[8]] == 1)[0])
-    particle_indices.append(np.where(flat_features[:, feature_ids[9]] == 1)[0])
-    particle_indices.append(np.where(flat_features[:, feature_ids[10]] == 1)[0])
+    particle_indices.append(np.where(flat_features[:, features[6]] == 1)[0])
+    particle_indices.append(np.where(flat_features[:, features[7]] == 1)[0])
+    particle_indices.append(np.where(flat_features[:, features[8]] == 1)[0])
+    particle_indices.append(np.where(flat_features[:, features[9]] == 1)[0])
+    particle_indices.append(np.where(flat_features[:, features[10]] == 1)[0])
 
     # for each particle type, save expert weights as stacked bar data
     for part_type_idx, indices in enumerate(particle_indices):
