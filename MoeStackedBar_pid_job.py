@@ -2356,13 +2356,13 @@ idx_to_label = {
 
 if model == '10_pct':
     model_path = 'net_best_epoch_state.pt'
-    data_dir = f'/moe-interpretability-pv/moe_stacked_bars_100k_data/'
+    data_dir = f'/moe-interpretability-pv/moe_stacked_bars_100k_pid_data/'
 elif model == 'seed_0':
     model_path = f'models/jc_100_seed_0_net_epoch_state.pt'
-    data_dir = f'/moe-interpretability-pv/moe_stacked_bars_100k_data_seed_0/'
+    data_dir = f'/moe-interpretability-pv/moe_stacked_bars_100k_pid_data_seed_0/'
 elif model == 'seed_1':
     model_path = f'models/jc_100_seed_1_net_epoch_state.pt'
-    data_dir = f'/moe-interpretability-pv/moe_stacked_bars_100k_data_seed_1/'
+    data_dir = f'/moe-interpretability-pv/moe_stacked_bars_100k_pid_data_seed_1/'
 else:
     raise ValueError('Model type not recognized. Choose from: 10_pct, seed_0, seed_1.')
 
@@ -2373,7 +2373,7 @@ model.load_state_dict(state_dict)
 maxjets = 100000
 start_idx = chunk*(maxjets//total_chunks)
 
-counter_file = f'counter_stacked_MoE_bars_100k_chunk_{chunk}.txt'
+counter_file = f'counter_stacked_MoE_bars_100k_pid_chunk_{chunk}.txt'
 
 if not os.path.exists(data_dir+counter_file):
     with open(counter_file, 'w') as f:
