@@ -2435,7 +2435,7 @@ while start_idx < (chunk + 1)*(max_jets//total_chunks):
     print(f'processed from {start_idx-howmanyjets} to {start_idx}, jets contained type {idx_to_label[(start_idx-howmanyjets)//10000]}')
     with open(counter_file, 'w') as f:
         f.write(str(start_idx))
-    subprocess.run(['sudo', 'cp', counter_file, f'/moe-interpretability-pv/moe_expert_ablation_{model}/{counter_file}'])
+    subprocess.run(['sudo', 'cp', counter_file, data_dir+counter_file])
 
 y_pred = np.empty((max_jets, 10))
 for file in os.listdir(data_dir):
@@ -2467,7 +2467,7 @@ print(f'When ablating Experts {ablated_experts}, accuracy over {y_pred.shape} je
 with open(f'results.txt', 'w') as f:
     f.write(f'Model: {model}\n')
     f.write(f'When ablating Experts {ablated_experts_string}, accuracy over {max_jets} jets: {accuracy*100:.2f}%\n')
-subprocess.run(['sudo', 'cp', 'results.txt', f'/moe-interpretability-pv/moe_expert_ablation_{model}/results_ablate_{ablated_experts_string}.txt'])
+subprocess.run(['sudo', 'cp', 'results.txt', data_dir+'results_ablate_{ablated_experts_string}.txt'])
 
 # background rejection
 efficiency = np.array([0.5, 0.5, 0.5, 0.5, 0.5, 0.99, 0.5, 0.5, 0.5, 0.995])  # target signal efficiencies for each label
@@ -2484,7 +2484,7 @@ for label in range(labels.shape[1]):
     with open(f'results.txt', 'a') as f:
         f.write(f'Label {label} ({label_idx_to_name[label]}): AUC: {auc:.4f}\n')
         f.write(f'Label {label} ({label_idx_to_name[label]}): Background rejection at {efficiency[label]*100}% signal efficiency: {rejections[-1]:.2f}\n')
-    subprocess.run(['sudo', 'cp', 'results.txt', f'/moe-interpretability-pv/moe_expert_ablation_{model}/results_ablate_{ablated_experts_string}.txt'])
+    subprocess.run(['sudo', 'cp', 'results.txt', data_dir+'results_ablate_{ablated_experts_string}.txt'])
 
 feature_ids = {
     0: 'part_pt_log',
