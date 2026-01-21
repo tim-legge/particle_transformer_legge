@@ -2380,7 +2380,7 @@ if not os.path.exists(data_dir+counter_file):
         f.write(f'{start_idx}')
     subprocess.run(['sudo', 'mv', '-f', counter_file, data_dir])
 
-with open(data_dir+f'counter_stacked_MoE_bars_100k_chunk_{chunk}.txt', 'r') as f:
+with open(data_dir+counter_file, 'r') as f:
     start_idx = int(f.read().strip())
 
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
