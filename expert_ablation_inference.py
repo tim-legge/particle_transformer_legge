@@ -2418,8 +2418,8 @@ subprocess.run(['sudo', 'chmod', '777', counter_file])
 file_dir = '/moe-interpretability-pv/datasets/'
 file_list = sorted([file for file in os.listdir(file_dir) if file.endswith('.root')])
 num_files = len(file_list)
-feat_file = start_idx // 1e6
-feat_idx = start_idx % 1e6
+feat_file = int(start_idx // 1e6)
+feat_idx = int(start_idx % 1e6)
 
 while start_idx < (chunk + 1)*(max_jets//total_chunks):
     print(f'Starting index: {start_idx}')
