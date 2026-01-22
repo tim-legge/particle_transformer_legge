@@ -2462,11 +2462,16 @@ label_idx_to_name = {
 labels = np.load('/moe-interpretability-pv/datasets/jc_full_labels.npy', allow_pickle=True)[:y_pred.shape[0]]
 
 accuracy = (y_pred.argmax(axis=1) == labels.argmax(axis=1)).sum() / y_pred.shape[0]
-print(f'When ablating Experts {ablated_experts}, accuracy over {y_pred.shape} jets: {accuracy*100:.2f}%')
+acc_by_class = []
+print(f'Ablating Experts {ablated_experts}: accuracy over {y_pred.shape[0]} jets: {accuracy*100:.2f}%')
+for label in range(labels.shape[1]):
+    class_acc = (y_pred[labels.argmax(axis=1) == label].argmax(axis=1) == label).sum() / (labels.argmax(axis=1) == label).sum()
+    acc_by_class.append(class_acc)
+    print(f'Accuracy for class {label} ({label_idx_to_name[label]}): {class_acc*100:.2f}%')
 
 with open(f'results.txt', 'w') as f:
     f.write(f'Model: {model}\n')
-    f.write(f'When ablating Experts {ablated_experts_string}, accuracy over {max_jets} jets: {accuracy*100:.2f}%\n')
+    f.write(f'Ablating Experts {ablated_experts_string}: accuracy over {y_pred.shape[0]} jets: {accuracy*100:.2f}%\n')
 subprocess.run(['sudo', 'cp', 'results.txt', data_dir+'results_ablate_{ablated_experts_string}.txt'])
 
 # background rejection
@@ -2475,14 +2480,15 @@ rejections = []
 import sklearn.metrics as metrics
 for label in range(labels.shape[1]):
     auc = metrics.roc_auc_score(labels[:,label], y_pred[:,label])
-    print(f'Ablating Experts {ablated_experts}')
     print(f'Label {label} ({label_idx_to_name[label]}): AUC: {auc:.4f}')
+    print(f'Class accuracy: {acc_by_class[label]*100:.2f}%')
     fpr, tpr, thresholds = metrics.roc_curve(labels[:,label], y_pred[:,label], pos_label=1)
     sig_idx = np.argmin(np.abs(tpr - efficiency[label]))
     rejections.append(1.0 / fpr[sig_idx])
     print(f'Label {label} ({idx_to_label[label]}): Background rejection at {efficiency[label]*100}% signal efficiency: {rejections[-1]:.2f}')
     with open(f'results.txt', 'a') as f:
         f.write(f'Label {label} ({label_idx_to_name[label]}): AUC: {auc:.4f}\n')
+        f.write(f'Class accuracy: {acc_by_class[label]*100:.2f}%\n')
         f.write(f'Label {label} ({label_idx_to_name[label]}): Background rejection at {efficiency[label]*100}% signal efficiency: {rejections[-1]:.2f}\n')
     subprocess.run(['sudo', 'cp', 'results.txt', data_dir+'results_ablate_{ablated_experts_string}.txt'])
 
