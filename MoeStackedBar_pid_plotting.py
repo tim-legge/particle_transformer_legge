@@ -6,7 +6,6 @@ colors = plt.rcParams['axes.prop_cycle'].by_key()['color']
 plt.style.use(hep.style.ROOT)
 plt.rcParams['axes.prop_cycle'] = plt.cycler(color=colors)
 
-
 import argparse
 
 parser = argparse.ArgumentParser(description='Plotting MoE Stacked Bars by PID')
@@ -34,17 +33,39 @@ idx_to_label = {
     9: 'Z_QQ'
 }
 
-if model == 'seed_0':
-    data_dir = f'/moe-interpretability-pv/moe_stacked_bars_100k_data_{model}_ll/'
-elif model == 'seed_1':
-    data_dir = f'/moe-interpretability-pv/moe_stacked_bars_100k_data_{model}_ll/'
-else:
-    data_dir = f'/moe-interpretability-pv/moe_stacked_bars_100k_data_ll/'
+feature_ids = {
+    0: 'part_pt_log',
+    1: 'part_e_log',
+    2: 'part_logptrel',
+    3: 'part_logerel',
+    4: 'part_deltaR',
+    5: 'part_charge',
+    6: 'part_isChargedHadron',
+    7: 'part_isNeutralHadron',
+    8: 'part_isPhoton',
+    9: 'part_isElectron',
+    10: 'part_isMuon',
+    11: 'part_d0',
+    12: 'part_d0err',
+    13: 'part_dz',
+    14: 'part_dzerr',
+    15: 'part_deta',
+    16: 'part_dphi'
+}
 
-for label_idx, label in idx_to_label.items():
+part_type = ['Charged_Hadron', 'Neutral_Hadron', 'Photon', 'Electron', 'Muon']
+
+if model == 'seed_0':
+    data_dir = f'/moe-interpretability-pv/moe_stacked_bars_100k_pid_data_{model}/'
+elif model == 'seed_1':
+    data_dir = f'/moe-interpretability-pv/moe_stacked_bars_100k_pid_data_{model}/'
+else:
+    data_dir = f'/moe-interpretability-pv/moe_stacked_bars_100k_pid_data_10_pct/'
+
+for part_idx, part_type in enumerate(part_type):
     for file in os.listdir(data_dir):
-        if file.endswith('.npy') and not file.endswith('attempt_0.npy'):
-            if f'type_{label}' in file:
+        if file.endswith('.npy'):
+            if part_type in file:
                 expert_idx_in_file = int(file.split('expert_')[1].split('_')[0])
                 data = np.load(data_dir+f'{file}', allow_pickle=True)
                 for expert_idx in range(num_experts):
@@ -52,7 +73,7 @@ for label_idx, label in idx_to_label.items():
         else:
             continue
     
-    print('data loaded for ', label)
+    print('data loaded for ', part_type)
     num_bins = 200
     bottom = np.zeros(num_bins)
     
@@ -60,11 +81,12 @@ for label_idx, label in idx_to_label.items():
     total_counts = sum([len(expert_weight_data[expert_idx]) for expert_idx in range(num_experts)])
     percentages = np.round(np.array([len(expert_weight_data[expert_idx]) / total_counts * 100 for expert_idx in range(num_experts)]), 1)
     expert_entropy = -np.sum(np.log(percentages/100)*percentages/100)
+    print(f'Expert weight distribution for {part_type} jets has entropy: {expert_entropy}')
     fig, ax = plt.subplots()
     ax.hist(expert_weight_data, bins=num_bins, histtype='barstacked', label=[f'Expert {i}: {percentages[i]}%' for i in range(num_experts)], density=True, color=plt.cm.tab10.colors[:num_experts])
     ax.legend(fontsize=18, loc='upper left')
-    ax.set_title(f'Distribution of Expert Weights, {label.replace("_", " ")} Jets')
-    plt.savefig(f'./MoeStackedBar_plot_{label}_100k.png')
+    ax.set_title(f'Distribution of Expert Weights, {part_type.replace("_", " ")} Jets')
+    plt.savefig(f'./MoeStackedBar_plot_{part_type}_100k.png')
     plt.close()
 
     fig, ax = plt.subplots()
@@ -74,8 +96,8 @@ for label_idx, label in idx_to_label.items():
         expert_blind = np.concatenate((expert_blind, expert_weight_data[expert_idx]))
     ax.hist(expert_blind, bins=num_bins, histtype='bar', color='tab:blue', alpha=1, label='All Experts', density=True)
     ax.legend(fontsize=18, loc='upper left')
-    ax.set_title(f'Distribution of Expert Weights, {label.replace("_", " ")} Jets')
-    plt.savefig(f'./MoeAgglomeratedBar_plot_{label}_100k.png')
+    ax.set_title(f'Distribution of Expert Weights, {part_type.replace("_", " ")} Jets')
+    plt.savefig(f'./MoeAgglomeratedBar_plot_{part_type}_100k.png')
     plt.close()
 
     fig, ax = plt.subplots()
@@ -84,8 +106,8 @@ for label_idx, label in idx_to_label.items():
         if sorted(percentages)[-4] <= percentages[expert_idx]:
             ax.hist(expert_weight_data[expert_idx], bins=num_bins//6, histtype='step', label=f'Expert {expert_idx}', density=True, color=plt.cm.tab10.colors[expert_idx])
     ax.legend(fontsize=18, loc='upper left')
-    ax.set_title(f'Separately Normalized Expert Weights, {label.replace("_", " ")}')
-    plt.savefig(f'./SeparateExperts_plot_{label}_100k.png')
+    ax.set_title(f'Separately Normalized Expert Weights, {part_type.replace("_", " ")}')
+    plt.savefig(f'./SeparateExperts_plot_{part_type}_100k.png')
     plt.close()
     
     expert_weight_data = [np.array([]) for _ in range(num_experts)]
