@@ -2289,9 +2289,14 @@ class Router_Hook:
 
     def collect_expert_assignments(self, module, input, output):
         print('Collecting expert assignments')
-
-        expert_weights = module.topk_w # shape (num_particles, k_experts)
-        expert_assignments = module.topk_idx # shape (num_particles, k_experts)
+        # FIX: Reshape from Particle-Major (P, N) to Jet-Major (N, P)
+        # Input x to block is (P, N, C)
+        x_input = input[0] 
+        P, N, _ = x_input.shape
+        
+        # Reshape, Transpose, Flatten
+        expert_weights = module.topk_w.view(P, N, -1).transpose(0, 1).reshape(N * P, -1)
+        expert_assignments = module.topk_idx.view(P, N, -1).transpose(0, 1).reshape(N * P, -1)
 
         # handle padding by not recording data from null particles
         if hasattr(module, 'padding_mask'):
@@ -2366,7 +2371,7 @@ elif model == 'seed_1':
 else:
     raise ValueError('Model type not recognized. Choose from: 10_pct, seed_0, seed_1.')
 
-model = get_model(data_type='jc_full')[0]
+model = get_model(data_type='jc_full', trim=False)[0]
 
 state_dict = torch.load(model_path, map_location='cpu')
 model.load_state_dict(state_dict)
