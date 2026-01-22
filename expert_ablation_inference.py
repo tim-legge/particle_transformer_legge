@@ -2412,23 +2412,19 @@ with open(counter_file, 'r') as f:
 subprocess.run(['sudo', 'chmod', '777', counter_file])
 
 # define which files to process based on start_idx
-file_dir = '/moe-interpretability-pv/datasets/2M_test/'
+file_dir = '/moe-interpretability-pv/datasets/'
 file_list = sorted([file for file in os.listdir(file_dir) if file.endswith('.root')])
 num_files = len(file_list)
-jets_per_file = 1e5
-file_to_process_idx = start_idx // jets_per_file
-file_to_process = file_list[file_to_process_idx]
-stem = file_to_process[:-5]  # remove .root
-jet_idx_within_file_start = start_idx % jets_per_file
-print(f'Processing file: {file_to_process} starting at jet index {jet_idx_within_file_start}')
+feat_file = start_idx // 1e6
+feat_idx = start_idx % 1e6
 
 while start_idx < (chunk + 1)*(max_jets//total_chunks):
     print(f'Starting index: {start_idx}')
-    features = np.load(file_dir+stem+'_features.npy', allow_pickle=True)[jet_idx_within_file_start:howmanyjets+jet_idx_within_file_start]
-    masks = np.load(file_dir+stem+'_mask.npy', allow_pickle=True)[jet_idx_within_file_start:howmanyjets+jet_idx_within_file_start]
-    labels = np.load(file_dir+stem+'_labels.npy', allow_pickle=True)[jet_idx_within_file_start:howmanyjets+jet_idx_within_file_start]
-    vectors = np.load(file_dir+stem+'_vectors.npy', allow_pickle=True)[jet_idx_within_file_start:howmanyjets+jet_idx_within_file_start]
-    points = np.load(file_dir+stem+'_points.npy', allow_pickle=True)[jet_idx_within_file_start:howmanyjets+jet_idx_within_file_start]
+    features = np.load(file_dir+f'jc_full_2M_features_{feat_file}.npy', allow_pickle=True)[feat_idx:howmanyjets+feat_idx]
+    masks = np.load(file_dir+'jc_full_2M_mask.npy', allow_pickle=True)[start_idx:howmanyjets+start_idx]
+    labels = np.load(file_dir+'jc_full_2M_labels.npy', allow_pickle=True)[start_idx:howmanyjets+start_idx]
+    vectors = np.load(file_dir+'jc_full_2M_vectors.npy', allow_pickle=True)[start_idx:howmanyjets+start_idx]
+    points = np.load(file_dir+'jc_full_2M_points.npy', allow_pickle=True)[start_idx:howmanyjets+start_idx]
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     print(f'Using device: {device}')
@@ -2447,7 +2443,7 @@ while start_idx < (chunk + 1)*(max_jets//total_chunks):
         print(f'Error copying file to PV: {e}')
         exit(1)
     start_idx += howmanyjets
-    jet_idx_within_file_start += howmanyjets
+    feat_idx += howmanyjets
     print(f'processed from {start_idx-howmanyjets} to {start_idx}')
     with open(counter_file, 'w') as f:
         f.write(str(start_idx))
@@ -2475,7 +2471,7 @@ label_idx_to_name = {
     9: 'Top BL',
 }
 
-labels = np.load('/moe-interpretability-pv/datasets/jc_full_labels.npy', allow_pickle=True)[:y_pred.shape[0]]
+labels = np.load('/moe-interpretability-pv/datasets/jc_full_2M_labels.npy', allow_pickle=True)[:y_pred.shape[0]]
 
 accuracy = (y_pred.argmax(axis=1) == labels.argmax(axis=1)).sum() / y_pred.shape[0]
 acc_by_class = []
