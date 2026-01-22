@@ -36,7 +36,7 @@ import subprocess
 import argparse 
 
 parser = argparse.ArgumentParser(description='Load 2M JetClass test data')
-parser.add_argument('--file_idx', '-f', type=int, required=True, help='Index of the test file to load (0-19)')
+parser.add_argument('--file-idx', '-f', type=int, required=True, help='Index of the test file to load (0-19)')
 
 file_idx_to_load = parser.parse_args().file_idx
 
@@ -691,15 +691,15 @@ def load_data(file, dataset_type='jc_full', start_index=None, batch_size=None):
                     print('This part is working - JC')
                     data = build_features_and_labels(tree)
                     # Truncate to batch_size
-                    if data['pf_points'].shape[0] > batch_size:
-                        print(f"Truncating from {data['pf_points'].shape[0]} jets to {batch_size if batch_size is not None else 'all'} jets")
-                        data = {
-                            'pf_points': data['pf_points'][:batch_size],
-                            'pf_features': data['pf_features'][:batch_size],
-                            'pf_vectors': data['pf_vectors'][:batch_size],
-                            'pf_mask': data['pf_mask'][:batch_size],
-                            'label': data['label'][:batch_size]
-                        }
+                    
+                    print(f"Truncating from {data['pf_points'].shape[0]} jets to {batch_size if batch_size is not None else 'all'} jets")
+                    data = {
+                        'pf_points': data['pf_points'][:batch_size],
+                        'pf_features': data['pf_features'][:batch_size],
+                        'pf_vectors': data['pf_vectors'][:batch_size],
+                        'pf_mask': data['pf_mask'][:batch_size],
+                        'label': data['label'][:batch_size]
+                    }
                 return data
     except Exception as e:
         print(f"Could not load actual data: {e}")
@@ -721,6 +721,6 @@ np.save(file_to_load.replace('.root', '_vectors.npy'), jc_full_data['pf_vectors'
 np.save(file_to_load.replace('.root', '_mask.npy'), jc_full_data['pf_mask'])
 np.save(file_to_load.replace('.root', '_labels.npy'), jc_full_data['label'])
 
-subprocess.run(['sudo', 'mv', '*.npy', test_set_root_dir])
+subprocess.run(f'sudo mv *.npy {test_set_root_dir}', shell=True)
 
 print('Saved dataset arrays!')

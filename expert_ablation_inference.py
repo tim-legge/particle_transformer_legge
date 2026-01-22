@@ -43,7 +43,7 @@ plt.rcParams['axes.prop_cycle'] = plt.cycler(color=colors)
 
 import argparse
 
-total_chunks = 10
+total_chunks = 40
 
 parser = argparse.ArgumentParser(description='Expert Ablation')
 parser.add_argument('-e', '--expert', type=int, required=True, help='Expert index to ablate')
@@ -1783,7 +1783,8 @@ class MoeParticleTransformer(nn.Module):
                  #interpretability of pre-softmax
                  return_pre_softmax=False,
                  #expert ablation
-                 ablated_last_layer_experts=None,
+                 ablated_experts=None,
+                 ablated_layer=None,
                  # misc
                  trim=True,
                  for_inference=False,
@@ -1802,6 +1803,8 @@ class MoeParticleTransformer(nn.Module):
         self.for_inference = for_inference
         self.use_amp = use_amp
         self.return_pre_softmax = return_pre_softmax
+        self.ablated_layer = ablated_layer % num_layers if ablated_layer is not None else None
+        self.ablated_experts = ablated_experts
 
         embed_dim = embed_dims[-1] if len(embed_dims) > 0 else input_dim
         self.default_cfg = default_cfg = dict(embed_dim=embed_dim, num_heads=num_heads, ffn_ratio=4,
@@ -1843,7 +1846,7 @@ class MoeParticleTransformer(nn.Module):
                 moe_aux_loss_coef=self.moe_aux_loss_coef,
                 moe_router_jitter=self.moe_router_jitter,
                 return_pre_softmax=self.return_pre_softmax,
-                ablated_experts=ablated_last_layer_experts if _ == num_layers -1 else None,
+                ablated_experts=ablated_experts if _ == self.ablated_layer else None,
             ))
         self.blocks = nn.ModuleList(blocks)
         self.cls_blocks = nn.ModuleList([
@@ -2129,7 +2132,8 @@ def get_model(data_type=None, **kwargs):
             # interpretability of pre-softmax
             return_pre_softmax=True,
             # expert ablation
-            ablated_last_layer_experts=[],
+            ablated_experts=[],
+            ablated_layer=-1,
             # MoE settings
             moe_num_experts=8,
             moe_top_k=2,
@@ -2350,7 +2354,7 @@ class Router_Hook:
 
 
 
-MoE_model = get_model('jc_full', ablated_last_layer_experts=ablated_experts)[0]
+MoE_model = get_model('jc_full', ablated_experts=ablated_experts, ablated_layer=layer)[0]
 
 if model == '10_pct':
     modelpath = 'net_best_epoch_state.pt'
@@ -2361,7 +2365,7 @@ elif model == 'seed_1':
 
 MoE_statedict = torch.load(modelpath, map_location=torch.device('cpu'))
 MoE_model.load_state_dict(MoE_statedict)
-router_hook = Router_Hook(model=MoE_model)
+#router_hook = Router_Hook(model=MoE_model)
 #pre_softmax_hook = Pre_Softmax_Hook(model=MoE_model)
 
 idx_to_label = {
@@ -2379,7 +2383,7 @@ idx_to_label = {
 
 # In pod: pull multiple jet types
 jet_type = 'jc'
-max_jets = 100000
+max_jets = 2e6 #2 million jets
 start_idx = chunk*(max_jets//total_chunks)
 howmanyjets = num_jets
 ablated_experts_string = '_'.join([str(e) for e in ablated_experts])
@@ -2407,13 +2411,24 @@ with open(counter_file, 'r') as f:
     
 subprocess.run(['sudo', 'chmod', '777', counter_file])
 
+# define which files to process based on start_idx
+file_dir = '/moe-interpretability-pv/datasets/2M_test/'
+file_list = sorted([file for file in os.listdir(file_dir) if file.endswith('.root')])
+num_files = len(file_list)
+jets_per_file = 1e5
+file_to_process_idx = start_idx // jets_per_file
+file_to_process = file_list[file_to_process_idx]
+stem = file_to_process[:-5]  # remove .root
+jet_idx_within_file_start = start_idx % jets_per_file
+print(f'Processing file: {file_to_process} starting at jet index {jet_idx_within_file_start}')
+
 while start_idx < (chunk + 1)*(max_jets//total_chunks):
     print(f'Starting index: {start_idx}')
-    features = np.load('/moe-interpretability-pv/datasets/jc_full_pf_features.npy', allow_pickle=True)[start_idx:howmanyjets+start_idx]
-    masks = np.load('/moe-interpretability-pv/datasets/jc_full_pf_mask.npy', allow_pickle=True)[start_idx:howmanyjets+start_idx]
-    labels = np.load('/moe-interpretability-pv/datasets/jc_full_labels.npy', allow_pickle=True)[start_idx:howmanyjets+start_idx]
-    vectors = np.load('/moe-interpretability-pv/datasets/jc_full_pf_vectors.npy', allow_pickle=True)[start_idx:howmanyjets+start_idx]
-    points = np.load('/moe-interpretability-pv/datasets/jc_full_pf_points.npy', allow_pickle=True)[start_idx:howmanyjets+start_idx]
+    features = np.load(file_dir+stem+'_features.npy', allow_pickle=True)[jet_idx_within_file_start:howmanyjets+jet_idx_within_file_start]
+    masks = np.load(file_dir+stem+'_mask.npy', allow_pickle=True)[jet_idx_within_file_start:howmanyjets+jet_idx_within_file_start]
+    labels = np.load(file_dir+stem+'_labels.npy', allow_pickle=True)[jet_idx_within_file_start:howmanyjets+jet_idx_within_file_start]
+    vectors = np.load(file_dir+stem+'_vectors.npy', allow_pickle=True)[jet_idx_within_file_start:howmanyjets+jet_idx_within_file_start]
+    points = np.load(file_dir+stem+'_points.npy', allow_pickle=True)[jet_idx_within_file_start:howmanyjets+jet_idx_within_file_start]
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     print(f'Using device: {device}')
@@ -2432,7 +2447,8 @@ while start_idx < (chunk + 1)*(max_jets//total_chunks):
         print(f'Error copying file to PV: {e}')
         exit(1)
     start_idx += howmanyjets
-    print(f'processed from {start_idx-howmanyjets} to {start_idx}, jets contained type {idx_to_label[(start_idx-howmanyjets)//10000]}')
+    jet_idx_within_file_start += howmanyjets
+    print(f'processed from {start_idx-howmanyjets} to {start_idx}')
     with open(counter_file, 'w') as f:
         f.write(str(start_idx))
     subprocess.run(['sudo', 'cp', counter_file, data_dir+counter_file])
