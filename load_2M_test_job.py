@@ -709,6 +709,7 @@ test_set_root_dir = '/moe-interpretability-pv/datasets/2M_test/'
 
 sorted_files = sorted([file for file in os.listdir(test_set_root_dir) if file.endswith('.root')])
 file_to_load = sorted_files[file_idx_to_load]
+print(f'Loading file: {file_to_load}')
 
 jc_full_data = load_data(file=os.path.join(test_set_root_dir,file_to_load), dataset_type='jc_full')
 
@@ -722,4 +723,4 @@ np.save(file_to_load.replace('.root', '_labels.npy'), jc_full_data['label'])
 
 subprocess.run(['sudo', 'mv', '*.npy', test_set_root_dir])
 
-print('Saved full JC dataset arrays!')
+print('Saved dataset arrays!')
