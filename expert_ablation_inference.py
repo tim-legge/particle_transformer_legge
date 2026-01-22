@@ -2386,7 +2386,7 @@ idx_to_label = {
 # In pod: pull multiple jet types
 jet_type = 'jc'
 max_jets = 2e6 #2 million jets
-start_idx = chunk*(max_jets//total_chunks)
+start_idx = int(chunk*(max_jets//total_chunks))
 howmanyjets = num_jets
 ablated_experts_string = '_'.join([str(e) for e in ablated_experts])
 data_dir = f'/moe-interpretability-pv/moe_expert_ablation_l{layer}_{model}/'
