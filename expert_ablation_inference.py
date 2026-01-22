@@ -2467,7 +2467,7 @@ print(f'Ablating Experts {ablated_experts}: accuracy over {y_pred.shape[0]} jets
 for label in range(labels.shape[1]):
     class_acc = (y_pred[labels.argmax(axis=1) == label].argmax(axis=1) == label).sum() / (labels.argmax(axis=1) == label).sum()
     acc_by_class.append(class_acc)
-    print(f'Accuracy for class {label} ({label_idx_to_name[label]}): {class_acc*100:.2f}%')
+    #print(f'Accuracy for class {label} ({label_idx_to_name[label]}): {class_acc*100:.2f}%')
 
 with open(f'results.txt', 'w') as f:
     f.write(f'Model: {model}\n')
