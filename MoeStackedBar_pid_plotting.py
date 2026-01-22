@@ -65,9 +65,9 @@ else:
 for part_idx, part_type in enumerate(part_type):
     for file in os.listdir(data_dir):
         if file.endswith('.npy'):
-            if part_type in file:
+            if part_type.lower() in file:
                 expert_idx_in_file = int(file.split('expert_')[1].split('_')[0])
-                data = np.load(data_dir+f'{file}', allow_pickle=True)
+                data = np.load(data_dir+file, allow_pickle=True)
                 for expert_idx in range(num_experts):
                     expert_weight_data[expert_idx_in_file] = np.concatenate((expert_weight_data[expert_idx_in_file], data))
         else:
