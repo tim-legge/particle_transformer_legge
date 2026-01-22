@@ -51,12 +51,14 @@ parser.add_argument('-m', '--model', type=str, required=True, help='Model name')
 parser.add_argument('-c', '--chunk', type=int, required=True, help='Chunk index for job array')
 parser.add_argument('-l', '--layer', type=int, default=-1, help='Layer index to ablate expert from (default: last layer)')
 parser.add_argument('-n', '--num-jets', type=int, default=1000, help='Number of jets to process')
+parser.add_argument('-r', '--restart', action='store_true', default=False, help='Restart from beginning if set')
 
 model = parser.parse_args().model
 layer = parser.parse_args().layer
 chunk = parser.parse_args().chunk
 ablated_experts = np.array([parser.parse_args().expert]) if parser.parse_args().expert >=0 else np.array([])
 num_jets = parser.parse_args().num_jets
+restart = parser.parse_args().restart
 
 # functions to facilitate modded Multihead
 
