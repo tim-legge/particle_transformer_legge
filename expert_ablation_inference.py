@@ -2398,7 +2398,7 @@ if not os.path.exists(data_dir):
     subprocess.run(['sudo', 'chmod', '777', data_dir])
 
 #check for counter file corresponding to specific ablation
-if not os.path.exists(data_dir+counter_file):
+if not os.path.exists(data_dir+counter_file) or if restart:
     with open(counter_file, 'w') as f:
         f.write(f'{start_idx}')
     subprocess.run(['sudo', 'cp', counter_file, data_dir])
