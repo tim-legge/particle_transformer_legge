@@ -2439,7 +2439,7 @@ while start_idx < (chunk + 1)*(max_jets//total_chunks):
     filename = f'y_pred_ablate_{ablated_experts_string}_{start_idx}_{howmanyjets+start_idx}.npy'
     
     np.save(filename, y_pred.cpu().numpy())
-    
+
     try:
         subprocess.run(['sudo', 'mv', filename, 
                     data_dir], check=True)
@@ -2488,7 +2488,7 @@ for label in range(labels.shape[1]):
 with open(f'results.txt', 'w') as f:
     f.write(f'Model: {model}\n')
     f.write(f'Ablating Experts {ablated_experts_string}: accuracy over {y_pred.shape[0]} jets: {accuracy*100:.2f}%\n')
-subprocess.run(['sudo', 'cp', 'results.txt', data_dir+'results_ablate_{ablated_experts_string}.txt'])
+subprocess.run(['sudo', 'cp', 'results.txt', data_dir+f'results_ablate_{ablated_experts_string}.txt'])
 
 # background rejection
 efficiency = np.array([0.5, 0.5, 0.5, 0.5, 0.5, 0.99, 0.5, 0.5, 0.5, 0.995])  # target signal efficiencies for each label
@@ -2506,7 +2506,7 @@ for label in range(labels.shape[1]):
         f.write(f'Label {label} ({label_idx_to_name[label]}): AUC: {auc:.4f}\n')
         f.write(f'Class accuracy: {acc_by_class[label]*100:.2f}%\n')
         f.write(f'Label {label} ({label_idx_to_name[label]}): Background rejection at {efficiency[label]*100}% signal efficiency: {rejections[-1]:.2f}\n')
-    subprocess.run(['sudo', 'cp', 'results.txt', data_dir+'results_ablate_{ablated_experts_string}.txt'])
+    subprocess.run(['sudo', 'cp', 'results.txt', data_dir+f'results_ablate_{ablated_experts_string}.txt'])
 
 feature_ids = {
     0: 'part_pt_log',
