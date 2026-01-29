@@ -2387,7 +2387,6 @@ idx_to_label = {
 jet_type = 'jc'
 max_jets = 2e6 #2 million jets
 start_idx = int(chunk*(max_jets//total_chunks))
-print(f'Starting from index: {start_idx}')
 howmanyjets = num_jets
 ablated_experts_string = '_'.join([str(e) for e in ablated_experts])
 data_dir = f'/moe-interpretability-pv/moe_expert_ablation_l{layer}_{model}/'
