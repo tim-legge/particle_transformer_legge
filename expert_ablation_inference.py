@@ -2454,11 +2454,13 @@ while start_idx < (chunk + 1)*(max_jets//total_chunks) and not only_results:
         f.write(str(start_idx))
     subprocess.run(['sudo', 'cp', counter_file, data_dir+counter_file])
 
-y_pred = np.empty((max_jets, 10))
+y_pred = np.zeros((max_jets, 10))
+processed_mask = np.zeros((max_jets,), dtype=bool)
 for file in os.listdir(data_dir):
     if file.startswith(f'y_pred_ablate_{ablated_experts_string}_') and file.endswith('.npy'):
         range_idxs = file[len(f'y_pred_ablate_{ablated_experts_string}_'):-4]
         start, end = map(int, range_idxs.split('_'))
+        processed_mask[start:end] = True
         #print(f'Loading predictions from jets {start} to {end}')
         part = np.load(data_dir+f'{file}', allow_pickle=True)
         y_pred[start:end, :] = part
@@ -2477,7 +2479,9 @@ label_idx_to_name = {
 }
 
 labels = np.load('/moe-interpretability-pv/datasets/jc_full_2M_labels.npy', allow_pickle=True)[:y_pred.shape[0]]
-
+# count accuracy over processed jets only
+y_pred = y_pred[processed_mask]
+labels = labels[processed_mask]
 accuracy = (y_pred.argmax(axis=1) == labels.argmax(axis=1)).sum() / y_pred.shape[0]
 acc_by_class = []
 print(f'Ablating Experts {ablated_experts}: accuracy over {y_pred.shape[0]} jets: {accuracy*100:.2f}%')
