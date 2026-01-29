@@ -52,6 +52,7 @@ parser.add_argument('-c', '--chunk', type=int, required=True, help='Chunk index 
 parser.add_argument('-l', '--layer', type=int, default=-1, help='Layer index to ablate expert from (default: last layer)')
 parser.add_argument('-n', '--num-jets', type=int, default=1000, help='Number of jets to process')
 parser.add_argument('-r', '--restart', action='store_true', default=False, help='Restart from beginning if set')
+parser.add_argument('-o', '--only-results', action='store_true', default=False, help='Only process data already in the volume')
 
 model = parser.parse_args().model
 layer = parser.parse_args().layer
