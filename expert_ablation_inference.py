@@ -2387,7 +2387,7 @@ idx_to_label = {
 
 # In pod: pull multiple jet types
 jet_type = 'jc'
-max_jets = 2e6 #2 million jets
+max_jets = int(2e6) #2 million jets
 start_idx = int(chunk*(max_jets//total_chunks))
 howmanyjets = num_jets
 ablated_experts_string = '_'.join([str(e) for e in ablated_experts])
