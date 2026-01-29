@@ -60,6 +60,7 @@ chunk = parser.parse_args().chunk
 ablated_experts = np.array([parser.parse_args().expert]) if parser.parse_args().expert >=0 else np.array([])
 num_jets = parser.parse_args().num_jets
 restart = parser.parse_args().restart
+only_results = parser.parse_args().only_results
 
 # functions to facilitate modded Multihead
 
@@ -2421,7 +2422,7 @@ num_files = len(file_list)
 feat_file = int(start_idx // 1e6)
 feat_idx = int(start_idx % 1e6)
 
-while start_idx < (chunk + 1)*(max_jets//total_chunks):
+while start_idx < (chunk + 1)*(max_jets//total_chunks) and not only_results:
     print(f'Starting index: {start_idx}')
     features = np.load(file_dir+f'jc_full_2M_features_{feat_file}.npy', allow_pickle=True)[feat_idx:howmanyjets+feat_idx]
     masks = np.load(file_dir+'jc_full_2M_mask.npy', allow_pickle=True)[start_idx:howmanyjets+start_idx]
