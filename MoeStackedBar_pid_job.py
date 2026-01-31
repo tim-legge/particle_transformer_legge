@@ -2434,6 +2434,8 @@ while start_idx < (chunk + 1)*(maxjets//total_chunks):
         y_pred = model(torch.from_numpy(points),torch.from_numpy(features),
                                     torch.from_numpy(vectors),torch.from_numpy(masks))
     print('Inference complete!')
+    assignments = router_hook.expert_assignments
+    weights = router_hook.expert_weights
 
     # organize features into 2D array (particles, features)        
     flat_features = features.transpose(0,2,1) # (N, C, P) -> (N, P, C)
@@ -2462,6 +2464,14 @@ while start_idx < (chunk + 1)*(maxjets//total_chunks):
             filesize = subprocess.check_output(['du', '-h', file_name]).split()[0].decode('utf-8')
             #print(f'Saved expert {expert_idx} data for jets {start_idx} to {start_idx+1000}. File size: {filesize}')
             subprocess.run(['sudo', 'mv', file_name, data_dir])
+        # saving expert assignments
+        assignments_by_part = router_hook.expert_assignments[indices,:]
+        assignment_file_name = f'data_{start_idx}_to_{start_idx+howmanyjets}_part_type_{type}_expert_assignments_stacked_MoE_bars_100k.npy'
+        np.save(assignment_file_name, assignments_by_part.numpy())
+        subprocess.run(['sudo', 'mv', assignment_file_name, data_dir])
+    
+    # save expert pairs
+        
 
     print(f'Iteration {start_idx}/100000 complete! Saved by particle types, rerunning for next iteration...')
     
