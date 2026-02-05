@@ -2362,6 +2362,8 @@ MoE_model = get_model('jc_full', ablated_experts=ablated_experts, ablated_layer=
 
 if model == '10_pct':
     modelpath = 'net_best_epoch_state.pt'
+elif model == 'n8_k2':
+    modelpath = 'models/temp_n8_k2_10_pct.pt'
 elif model == 'seed_0':
     modelpath = 'models/jc_100_seed_0_net_epoch_state.pt'
 elif model == 'seed_1':

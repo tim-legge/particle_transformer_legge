@@ -59,6 +59,8 @@ if model == 'seed_0':
     data_dir = f'/moe-interpretability-pv/moe_stacked_bars_100k_pid_data_{model}/'
 elif model == 'seed_1':
     data_dir = f'/moe-interpretability-pv/moe_stacked_bars_100k_pid_data_{model}/'
+elif model == 'n8_k4':
+    data_dir = f'/moe-interpretability-pv/moe_stacked_bars_100k_pid_data_10_pct_n8_k4/'
 else:
     data_dir = f'/moe-interpretability-pv/moe_stacked_bars_100k_pid_data_10_pct/'
 
