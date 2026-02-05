@@ -2398,7 +2398,7 @@ def get_loss(data_config, **kwargs):
 MoE_model = get_model('jc_full')[0]
 
 if model == '10_pct':
-    modelpath = f'net_best_epoch_state.pt'
+    modelpath = f'models/temp_n8_k2_10_pct.pt'
 elif model == 'seed_0':
     modelpath = f'models/jc_100_seed_0_net_epoch_state.pt'
 elif model == 'seed_1':

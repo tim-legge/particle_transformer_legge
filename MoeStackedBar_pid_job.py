@@ -2291,7 +2291,7 @@ class Router_Hook:
 
     def collect_expert_assignments(self, module, input, output):
         print('Collecting expert assignments')
-        # FIX: Reshape from Particle-Major (P, N) to Jet-Major (N, P)
+        # Reshape from Particle-Major (P, N) to Jet-Major (N, P)
         # Input x to block is (P, N, C)
         x_input = input[0] 
         P, N, _ = x_input.shape
@@ -2362,7 +2362,7 @@ idx_to_label = {
 
 
 if model == '10_pct':
-    model_path = 'net_best_epoch_state.pt'
+    model_path = 'models/temp_n8_k2_10_pct.pt'
     data_dir = f'/moe-interpretability-pv/moe_stacked_bars_100k_pid_data_10_pct/'
 elif model == 'seed_0':
     model_path = f'models/jc_100_seed_0_net_epoch_state.pt'
