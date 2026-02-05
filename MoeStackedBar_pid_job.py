@@ -47,12 +47,16 @@ total_chunks = 10
 
 parser = argparse.ArgumentParser(description='Running inference to study last-layer experts')
 parser.add_argument('-m', '--model', type=str, required=True, help='Model name, (seed_0, seed_1, 10_pct)')
+parser.add_argument('-e', '--num-experts', type=int, required=False, default=8, help='Number of experts in the MoE (default 8)')
+parser.add_argument('-k', '--k-experts', type=int, required=False, default=2, help='Number of experts selected by the router (default 4)')
 parser.add_argument('-c', '--chunk', type=int, required=True, help=f'Which chunk of the dataset to run on (0-{total_chunks-1})')
-parser.add_argument('-n', '--num_jets', type=int, required=False, 
+parser.add_argument('-n', '--num-jets', type=int, required=False, 
                     default=1000, help='number of jets to run inference on per step (default 1000)')
 parser.add_argument('-r', '--restart', action='store_true', help='Whether to restart the job if previous results exist')
 
 model = parser.parse_args().model
+num_experts = parser.parse_args().num_experts
+k_experts = parser.parse_args().k_experts
 chunk = parser.parse_args().chunk
 num_jets = parser.parse_args().num_jets
 restart = parser.parse_args().restart
@@ -2373,7 +2377,7 @@ elif model == 'seed_1':
 else:
     raise ValueError('Model type not recognized. Choose from: 10_pct, seed_0, seed_1.')
 
-model = get_model(data_type='jc_full', trim=False)[0]
+model = get_model(data_type='jc_full', moe_num_experts=num_experts, moe_top_k=k_experts, trim=False)[0]
 
 state_dict = torch.load(model_path, map_location='cpu')
 model.load_state_dict(state_dict)
