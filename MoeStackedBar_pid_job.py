@@ -50,7 +50,7 @@ parser.add_argument('-m', '--model', type=str, required=True, help='Model name, 
 parser.add_argument('-e', '--num-experts', type=int, required=False, default=8, help='Number of experts in the MoE (default 8)')
 parser.add_argument('-k', '--k-experts', type=int, required=False, default=2, help='Number of experts selected by the router (default 4)')
 parser.add_argument('-c', '--chunk', type=int, required=True, help=f'Which chunk of the dataset to run on (0-{total_chunks-1})')
-parser.add_argument('-n', '--num_jets', type=int, required=False, 
+parser.add_argument('-n', '--num-jets', type=int, required=False, 
                     default=1000, help='number of jets to run inference on per step (default 1000)')
 parser.add_argument('-r', '--restart', action='store_true', help='Whether to restart the job if previous results exist')
 
