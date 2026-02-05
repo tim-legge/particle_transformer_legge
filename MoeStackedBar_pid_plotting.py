@@ -64,7 +64,7 @@ else:
 
 for part_idx, part_type in enumerate(part_type):
     for file in os.listdir(data_dir):
-        if file.endswith('.npy'):
+        if file.endswith('.npy') and 'assignments' not in file:
             if part_type.lower() in file:
                 expert_idx_in_file = int(file.split('expert_')[1].split('_')[0])
                 data = np.load(data_dir+file, allow_pickle=True)
@@ -105,8 +105,8 @@ for part_idx, part_type in enumerate(part_type):
 
     fig, ax = plt.subplots()
     for expert_idx in range(num_experts):
-        # only plot 4 most significant experts
-        if sorted(percentages)[-4] <= percentages[expert_idx]:
+        # only plot experts >= 1%
+        if 1 <= percentages[expert_idx]:
             ax.hist(expert_weight_data[expert_idx], bins=num_bins//6, histtype='step', label=f'Expert {expert_idx}', density=True, color=plt.cm.tab10.colors[expert_idx])
     ax.legend(fontsize=18, loc='upper left')
     ax.set_title(f'Separately Normalized Expert Weights, {part_type.replace("_", " ")}')
