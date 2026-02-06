@@ -46,7 +46,7 @@ import argparse
 total_chunks = 10
 
 parser = argparse.ArgumentParser(description='Running inference to study last-layer experts')
-parser.add_argument('-m', '--model', type=str, required=True, help='Model name, (seed_0, seed_1, 10_pct)')
+parser.add_argument('-m', '--model', type=str, required=True, help='Model name, must be inside MoE_Interpretability/models/')
 parser.add_argument('-e', '--num-experts', type=int, required=False, default=8, help='Number of experts in the MoE (default 8)')
 parser.add_argument('-k', '--k-experts', type=int, required=False, default=2, help='Number of experts selected by the router (default 4)')
 parser.add_argument('-c', '--chunk', type=int, required=True, help=f'Which chunk of the dataset to run on (0-{total_chunks-1})')
@@ -54,7 +54,7 @@ parser.add_argument('-n', '--num-jets', type=int, required=False,
                     default=1000, help='number of jets to run inference on per step (default 1000)')
 parser.add_argument('-r', '--restart', action='store_true', help='Whether to restart the job if previous results exist')
 
-model = parser.parse_args().model
+model_name = parser.parse_args().model
 num_experts = parser.parse_args().num_experts
 k_experts = parser.parse_args().k_experts
 chunk = parser.parse_args().chunk
@@ -1711,7 +1711,9 @@ class Block(nn.Module):
         if self.moe_top_k == 1:
             # top-1 routing (Switch-style)
             top1_idx = gates.argmax(dim=-1)
+            self.topk_idx = top1_idx
             top1_w = gates.gather(1, top1_idx.unsqueeze(1)).squeeze(1)
+            self.topk_w = top1_w
             capacity = int(self.moe_capacity_factor * math.ceil(tokens.size(0) / max(1, self.moe_num_experts)))
             for e in range(self.moe_num_experts):
                 mask = (top1_idx == e)
@@ -2365,17 +2367,10 @@ idx_to_label = {
 }
 
 
-if model == '10_pct':
-    model_path = 'models/test_n8_k4_10_pct.pt'
-    data_dir = f'/moe-interpretability-pv/moe_stacked_bars_100k_pid_data_10_pct_n8_k4/'
-elif model == 'seed_0':
-    model_path = f'models/jc_100_seed_0_net_epoch_state.pt'
-    data_dir = f'/moe-interpretability-pv/moe_stacked_bars_100k_pid_data_seed_0/'
-elif model == 'seed_1':
-    model_path = f'models/jc_100_seed_1_net_epoch_state.pt'
-    data_dir = f'/moe-interpretability-pv/moe_stacked_bars_100k_pid_data_seed_1/'
-else:
-    raise ValueError('Model type not recognized. Choose from: 10_pct, seed_0, seed_1.')
+
+model_path = os.path.join('models/', model_name)
+model_name_split = model_name.split('.')[0]
+data_dir = f'/moe-interpretability-pv/stacked_bars_pid_{model_name_split}/'
 
 model = get_model(data_type='jc_full', moe_num_experts=num_experts, moe_top_k=k_experts, trim=False)[0]
 
@@ -2384,7 +2379,7 @@ model.load_state_dict(state_dict)
 maxjets = 100000
 start_idx = chunk*(maxjets//total_chunks)
 
-counter_file = f'counter_stacked_MoE_bars_100k_pid_chunk_{chunk}.txt'
+counter_file = f'counter_stacked_bars_pid_chunk_{chunk}.txt'
 
 if not os.path.exists(data_dir):
     subprocess.run(['sudo', 'mkdir', '-p', data_dir])
