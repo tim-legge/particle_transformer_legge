@@ -2367,7 +2367,6 @@ idx_to_label = {
 }
 
 
-
 model_path = os.path.join('models/', model_name)
 model_name_split = model_name.split('.')[0]
 data_dir = f'/moe-interpretability-pv/stacked_bars_pid_{model_name_split}/'

@@ -11,12 +11,13 @@ import argparse
 parser = argparse.ArgumentParser(description='Plotting MoE Stacked Bars by PID')
 parser.add_argument('-m', '--model', type=str, required=True, help='Model name, (10_pct, seed_0, seed_1)')
 
-model = parser.parse_args().model
+model_name = parser.parse_args().model
 
 import subprocess
 import os
 
-num_experts = 8
+num_experts = model_name.split('_k')[0].split('_n')[1]
+num_experts = int(num_experts)
 expert_weight_data = [np.array([]) for _ in range(num_experts)]
 agglomerated_data = expert_weight_data.copy()
 
@@ -55,14 +56,8 @@ feature_ids = {
 
 part_type = ['Charged_Hadron', 'Neutral_Hadron', 'Photon', 'Electron', 'Muon']
 
-if model == 'seed_0':
-    data_dir = f'/moe-interpretability-pv/moe_stacked_bars_100k_pid_data_{model}/'
-elif model == 'seed_1':
-    data_dir = f'/moe-interpretability-pv/moe_stacked_bars_100k_pid_data_{model}/'
-elif model == 'n8_k4':
-    data_dir = f'/moe-interpretability-pv/moe_stacked_bars_100k_pid_data_10_pct_n8_k4/'
-else:
-    data_dir = f'/moe-interpretability-pv/moe_stacked_bars_100k_pid_data_10_pct/'
+model_name_split = model_name.split('.')[0]
+data_dir = f'/moe-interpretability-pv/stacked_bars_pid_{model_name_split}/'
 
 for part_idx, part_type in enumerate(part_type):
     for file in os.listdir(data_dir):
@@ -118,6 +113,8 @@ for part_idx, part_type in enumerate(part_type):
     expert_weight_data = [np.array([]) for _ in range(num_experts)]
     # subprocess.run(['sudo', 'mv', f'./MoeStackedBar_plot_{label}_100k.png', f'/moe-interpretability-pv/moe_stacked_bars_100k_data/MoeStackedBar_plot_{label}_100k.png'])
     # data_0_to_1000_jet_type_Higgs BB_expert_0_stacked_MoE_bars_100k.npy
+
+subprocess.run(['sudo', 'cp', '*.png', data_dir])
 
 total_counts = sum([len(agglomerated_data[expert_idx]) for expert_idx in range(num_experts)])
 percentages = np.round(np.array([len(agglomerated_data[expert_idx]) / total_counts * 100 for expert_idx in range(num_experts)]), 1)
