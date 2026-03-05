@@ -16,10 +16,10 @@ model_name = parser.parse_args().model
 import subprocess
 import os
 
-num_experts = model_name.split('_k')[0].split('_n')[1]
+num_experts = model_name.split('_k')[0].split('n')[1]
 num_experts = int(num_experts)
 expert_weight_data = [np.array([]) for _ in range(num_experts)]
-agglomerated_data = expert_weight_data.copy()
+agglomerated_data = [np.array([]) for _ in range(num_experts)]
 
 idx_to_label = {
     0: 'Higgs_BB',
@@ -84,7 +84,7 @@ for part_idx, part_type in enumerate(part_type):
     print(f'Expert weight distribution for {part_type} jets has entropy: {expert_entropy}')
     fig, ax = plt.subplots()
     ax.hist(expert_weight_data, bins=num_bins, histtype='barstacked', label=[f'Expert {i}: {percentages[i]}%' for i in range(num_experts)], density=True, color=plt.cm.tab10.colors[:num_experts])
-    ax.legend(fontsize=18, loc='upper left')
+    ax.legend(fontsize=18)
     ax.set_title(f'Expert Weights, {part_type.replace("_", " ")} Particles \n Entropy: {np.round(expert_entropy, 3)}')
     plt.savefig(f'./MoeStackedBar_plot_{part_type}_100k.png')
     plt.close()
@@ -95,7 +95,7 @@ for part_idx, part_type in enumerate(part_type):
     for expert_idx in range(num_experts):
         expert_blind = np.concatenate((expert_blind, expert_weight_data[expert_idx]))
     ax.hist(expert_blind, bins=num_bins, histtype='bar', color='tab:blue', alpha=1, label='All Experts', density=True)
-    ax.legend(fontsize=18, loc='upper left')
+    ax.legend(fontsize=18, loc='best')
     ax.set_title(f'Expert Weights, {part_type.replace("_", " ")} Particles')
     plt.savefig(f'./MoeAgglomeratedBar_plot_{part_type}_100k.png')
     plt.close()
@@ -105,7 +105,7 @@ for part_idx, part_type in enumerate(part_type):
         # only plot experts >= 1%
         if 1 <= percentages[expert_idx]:
             ax.hist(expert_weight_data[expert_idx], bins=num_bins//6, histtype='step', label=f'Expert {expert_idx}', density=True, color=plt.cm.tab10.colors[expert_idx])
-    ax.legend(fontsize=18, loc='upper left')
+    ax.legend(fontsize=18)
     ax.set_title(f'Separately Normalized Expert Weights, {part_type.replace("_", " ")}')
     plt.savefig(f'./SeparateExperts_plot_{part_type}_100k.png')
     plt.close()
@@ -114,15 +114,13 @@ for part_idx, part_type in enumerate(part_type):
     # subprocess.run(['sudo', 'mv', f'./MoeStackedBar_plot_{label}_100k.png', f'/moe-interpretability-pv/moe_stacked_bars_100k_data/MoeStackedBar_plot_{label}_100k.png'])
     # data_0_to_1000_jet_type_Higgs BB_expert_0_stacked_MoE_bars_100k.npy
 
-subprocess.run(['sudo', 'cp', '*.png', data_dir])
-
 total_counts = sum([len(agglomerated_data[expert_idx]) for expert_idx in range(num_experts)])
 percentages = np.round(np.array([len(agglomerated_data[expert_idx]) / total_counts * 100 for expert_idx in range(num_experts)]), 1)
 expert_entropy = -np.sum(np.log(percentages/100)*percentages/100)
 
 fig, ax = plt.subplots()
-hists, = ax.hist(agglomerated_data, bins=num_bins, histtype='barstacked', label=[f'Expert {i}: {percentages[i]}%' for i in range(num_experts)], density=True, color=plt.cm.tab10.colors[:num_experts])
-ax.legend(handles = [hists], fontsize=18, loc='upper left')
+ax.hist(agglomerated_data, bins=num_bins, histtype='barstacked', label=[f'Expert {i}: {percentages[i]}%' for i in range(num_experts)], density=True, color=plt.cm.tab10.colors[:num_experts])
+ax.legend(fontsize=18, loc='best')
 ax.set_title(f'Expert Weights, All Particles')
 plt.savefig(f'./MoeStackedBar_plot_all_100k.png')
 plt.close()
@@ -133,7 +131,7 @@ agglomerated_expert_blind = np.array([])
 for expert_idx in range(num_experts):
     agglomerated_expert_blind = np.concatenate((agglomerated_expert_blind, agglomerated_data[expert_idx]))
 ax.hist(agglomerated_expert_blind, bins=num_bins, histtype='bar', color='tab:blue', alpha=0.6, label='All Experts', density=True)
-ax.legend(fontsize=18, loc='upper left')
+ax.legend(fontsize=18)
 ax.set_title(f'Expert Weights, All Particles')
 plt.savefig(f'./MoeAgglomeratedBar_plot_all_100k.png')
 plt.close()
@@ -141,7 +139,7 @@ plt.close()
 for expert_idx in range(num_experts):
     fig, ax = plt.subplots()
     ax.hist(agglomerated_data[expert_idx], bins=num_bins, range=(0,1), histtype='step', label=f'Expert {expert_idx}', density=True, color=plt.cm.tab10.colors[expert_idx])
-    ax.legend(fontsize=18, loc='upper left')
+    ax.legend(fontsize=18)
     ax.set_title(f'Expert {expert_idx} Weights, All Particles')
     plt.savefig(f'./SeparateExperts_plot_expert_{expert_idx}_100k.png')
     plt.close()
