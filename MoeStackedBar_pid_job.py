@@ -42,6 +42,7 @@ plt.rcParams['axes.prop_cycle'] = plt.cycler(color=colors)
 
 import subprocess
 import argparse
+import model_utils as mu
 
 total_chunks = 10
 
@@ -1925,8 +1926,6 @@ class MoeParticleTransformer(nn.Module):
             return output
 
 
-
-
 class MoeParticleTransformerTagger(nn.Module):
 
     def __init__(self,
@@ -2366,12 +2365,11 @@ idx_to_label = {
     9: 'Z_QQ'
 }
 
-
 model_path = os.path.join('models/', model_name)
 model_name_split = model_name.split('.')[0]
 data_dir = f'/moe-interpretability-pv/stacked_bars_pid_{model_name_split}/'
 
-model = get_model(data_type='jc_full', moe_num_experts=num_experts, moe_top_k=k_experts, trim=False)[0]
+model = mu.get_moe_model(data_type='jc_full', moe_num_experts=num_experts, moe_top_k=k_experts, trim=False)[0]
 
 state_dict = torch.load(model_path, map_location='cpu')
 model.load_state_dict(state_dict)
@@ -2427,9 +2425,11 @@ while start_idx < (chunk + 1)*(maxjets//total_chunks):
     vectors = np.load('/moe-interpretability-pv/datasets/jc_full_pf_vectors.npy', allow_pickle=True)[start_idx:howmanyjets+start_idx]
     points = np.load('/moe-interpretability-pv/datasets/jc_full_pf_points.npy', allow_pickle=True)[start_idx:howmanyjets+start_idx]
 
+    features, labels, masks, points, vectors = mu.load_jet_data(start_idx, howmanyjets, data_dir=data_dir, feats='full')
+
     jet_type = idx_to_label[start_idx // 10000]
     
-    router_hook = Router_Hook(model=model)
+    router_hook = mu.Router_Hook(model=model)
     model.eval()
     with torch.no_grad():
         y_pred = model(torch.from_numpy(points),torch.from_numpy(features),
