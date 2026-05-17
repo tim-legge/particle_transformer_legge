@@ -10,8 +10,10 @@ import argparse
 
 parser = argparse.ArgumentParser(description='Plotting MoE Stacked Bars by PID')
 parser.add_argument('-m', '--model', type=str, required=True, help='Model name, (10_pct, seed_0, seed_1)')
+parser.add_argument('--pid', action='store_true', help='Whether to plot by particle type')
 
 model_name = parser.parse_args().model
+pid_plotting = parser.parse_args().pid
 
 import subprocess
 import os
