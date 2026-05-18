@@ -52,6 +52,7 @@ parser = argparse.ArgumentParser(description='Running inference to study first-l
 parser.add_argument('-m', '--model', type=str, required=True, help='Model name, must be inside MoE_Interpretability/models/')
 parser.add_argument('-e', '--num-experts', type=int, required=False, default=8, help='Number of experts in the MoE (default 8)')
 parser.add_argument('-k', '--k-experts', type=int, required=False, default=2, help='Number of experts selected by the router (default 4)')
+parser.add_argument('-ffn', '--ffn-ratio', type=int, required=False, default=4, help='FFN expansion ratio (default 4)')
 
 parser.add_argument('-c', '--chunk', type=int, required=True, help=f'Which chunk of the dataset to run on (0-{total_chunks-1})')
 parser.add_argument('-n', '--num-jets', type=int, required=False, 
@@ -62,6 +63,7 @@ parser.add_argument('-r', '--restart', action='store_true', help='Whether to res
 model_name = parser.parse_args().model
 num_experts = parser.parse_args().num_experts
 k_experts = parser.parse_args().k_experts
+ffn_ratio = parser.parse_args().ffn_ratio
 chunk = parser.parse_args().chunk
 num_jets = parser.parse_args().num_jets
 moe_layer = parser.parse_args().layer
@@ -84,7 +86,7 @@ model_path = os.path.join('models/', model_name)
 model_name_split = model_name.split('.')[0]
 data_dir = f'/moe-interpretability-pv/stacked_bars_pid_{model_name_split}/'
 
-model = mu.get_moe_model(data_type='jc_full', moe_num_experts=num_experts, moe_top_k=k_experts, trim=False)[0]
+model = mu.get_moe_model(data_type='jc_full', moe_num_experts=num_experts, moe_top_k=k_experts, ffn_ratio=ffn_ratio, trim=False)[0]
 
 state_dict = torch.load(model_path, map_location='cpu')
 model.load_state_dict(state_dict)
