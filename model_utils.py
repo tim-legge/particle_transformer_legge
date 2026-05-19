@@ -2757,6 +2757,7 @@ class MoeParticleTransformer(nn.Module):
                  pair_extra_dim=0,
                  remove_self_pair=False,
                  use_pre_activation_pair=True,
+                 ffn_ratio=4,
                  embed_dims=[128, 512, 128],
                  pair_embed_dims=[64, 64, 64],
                  num_heads=8,
@@ -2788,7 +2789,7 @@ class MoeParticleTransformer(nn.Module):
         self.return_pre_softmax = return_pre_softmax
 
         embed_dim = embed_dims[-1] if len(embed_dims) > 0 else input_dim
-        self.default_cfg = default_cfg = dict(embed_dim=embed_dim, num_heads=num_heads, ffn_ratio=4,
+        self.default_cfg = default_cfg = dict(embed_dim=embed_dim, num_heads=num_heads, ffn_ratio=ffn_ratio,
                            dropout=0.1, attn_dropout=0.1, activation_dropout=0.1,
                            add_bias_kv=False, activation=activation,
                            scale_fc=True, scale_attn=True, scale_heads=True, scale_resids=True)
@@ -2830,7 +2831,7 @@ class MoeParticleTransformer(nn.Module):
             ))
         self.blocks = nn.ModuleList(blocks)
         self.cls_blocks = nn.ModuleList([
-            Block(
+            MoeBlock(
                 **cfg_cls_block,
                 moe_num_experts=self.moe_num_experts,
                 moe_top_k=self.moe_top_k,

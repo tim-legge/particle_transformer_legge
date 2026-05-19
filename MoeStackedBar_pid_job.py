@@ -60,14 +60,36 @@ parser.add_argument('-n', '--num-jets', type=int, required=False,
 parser.add_argument('-l', '--layer', type=int, required=False, default=0, help='Which MoE layer to study (default 0, first MoE layer)')
 parser.add_argument('-r', '--restart', action='store_true', help='Whether to restart the job if previous results exist')
 
+parser.add_argument('--dataset-dir', type=str, required=False, default='/moe-interpretability-pv/datasets/', help='Directory to store intermediate data files (default /moe-interpretability-pv/datasets/)')
+
 model_name = parser.parse_args().model
-num_experts = parser.parse_args().num_experts
-k_experts = parser.parse_args().k_experts
-ffn_ratio = parser.parse_args().ffn_ratio
+num_experts_opt = parser.parse_args().num_experts
+k_experts_opt = parser.parse_args().k_experts
+ffn_ratio_opt = parser.parse_args().ffn_ratio
 chunk = parser.parse_args().chunk
 num_jets = parser.parse_args().num_jets
 moe_layer = parser.parse_args().layer
 restart = parser.parse_args().restart
+dataset_dir = parser.parse_args().dataset_dir
+
+try:
+    num_experts = model_name.split('_k')[0].split('n')[1]
+    num_experts = int(num_experts)
+    k_experts = model_name.split('_k')[1].split('_')[0]
+    k_experts = int(k_experts)
+except Exception as e:
+    print('Error parsing model name for num_experts or k_experts. Will rely on command line arguments or defaults for these values. Error details:')
+    print(e)
+    num_experts = num_experts_opt
+    k_experts = k_experts_opt
+
+try:
+    ffn_ratio = model_name.split('_ffn')[1].split('_')[0]
+    ffn_ratio = int(ffn_ratio)
+except Exception as e:
+    print('Error parsing model name for ffn_ratio. Will rely on command line arguments or default for this value. Error details:')
+    print(e)
+    ffn_ratio = ffn_ratio_opt
 
 idx_to_label = {
     0: 'Higgs_BB',
@@ -136,11 +158,11 @@ while start_idx < (chunk + 1)*(maxjets//total_chunks):
     print(f'Chunk {chunk}: Beginning at index {start_idx}/100000...')
     logging.info(f'Chunk {chunk}: Beginning at index {start_idx}/100000...')
     
-    features, labels, masks, points, vectors = mu.load_jet_data(start_idx, start_idx+howmanyjets, data_dir=data_dir, feats='full')
+    features, labels, masks, points, vectors = mu.load_jet_data(start_idx, start_idx+howmanyjets, data_dir=dataset_dir, feats='full')
 
     jet_type = idx_to_label[start_idx // 10000]
     
-    router_hook = mu.Router_Hook(model=model, layer=moe_layer)
+    router_hook = mu.Router_Hook(model=model, layer_idx=moe_layer)
     model.eval()
     with torch.no_grad():
         y_pred = model(torch.from_numpy(points),torch.from_numpy(features),
