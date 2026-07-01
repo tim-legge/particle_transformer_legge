@@ -2955,14 +2955,12 @@ class Router_Hook:
         # handle padding by not recording data from null particles
         if hasattr(module, 'padding_mask'):
             if module.padding_mask is not None:
-                print('Found padding mask, applying to expert assignments')
                 padding_mask = module.padding_mask # shape (batch_size, seq_len)
                 padding_mask = padding_mask.view(-1) # shape (batch_size * seq_len)
                 valid_indices = torch.where(padding_mask == 0)[0] # indices of non-padded particles
                 self.valid_indices = valid_indices
                 expert_weights = expert_weights[valid_indices,:]
                 expert_assignments = expert_assignments[valid_indices,:]
-                print(f'After padding, expert weights shape: {expert_weights.shape}')
 
         # sort weights according to assignments
         for part_idx in range(expert_assignments.shape[0]):

@@ -10,6 +10,7 @@ import argparse
 
 parser = argparse.ArgumentParser(description='Plotting MoE Stacked Bars by PID')
 parser.add_argument('-m', '--model', type=str, required=True, help='Model name, (10_pct, seed_0, seed_1)')
+parser.add_argument('-e', '--num-experts', type=int, required=False, default=8, help='Number of experts')
 parser.add_argument('--pid', action='store_true', help='Whether to plot by particle type')
 
 model_name = parser.parse_args().model
@@ -18,7 +19,7 @@ pid_plotting = parser.parse_args().pid
 import subprocess
 import os
 
-num_experts = model_name.split('_k')[0].split('n')[1]
+num_experts = parser.parse_args().num_experts
 num_experts = int(num_experts)
 expert_weight_data = [np.array([]) for _ in range(num_experts)]
 agglomerated_data = [np.array([]) for _ in range(num_experts)]
