@@ -118,8 +118,7 @@ else:
 device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 
 howmanyjets = num_jets
-
-features, labels, masks, points, vectors = mu.load_jet_data(stop=1000, step=100, data_dir=dataset_dir, feats='full')
+features, labels, masks, points, vectors = mu.load_jet_data(step=100, data_dir=dataset_dir, feats='full')
 
 router_hook = mu.Router_Hook(model)
 model.eval()
@@ -230,5 +229,5 @@ while start_idx < (chunk + 1)*(maxjets//total_chunks):
     with open(counter_file, 'w') as f:
         f.write(f'{start_idx}')
     subprocess.run(['sudo', 'mv', '-f', counter_file, data_dir])
-
+    print(f'Chunk {chunk}: Finished at index {start_idx}/100000.')
     
